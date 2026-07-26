@@ -3,6 +3,8 @@
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
+import { ThemeToggle } from "@/components/theme-toggle";
+
 const links = [
   { label: "Services", href: "#services" },
   { label: "Work", href: "#work" },
@@ -17,6 +19,7 @@ export function Navbar() {
     <header className="relative z-50 border-b border-border bg-background">
       <div className="container-main">
         <nav className="flex h-20 items-center justify-between">
+          {/* Brand */}
           <a
             href="#"
             className="flex items-center gap-3 font-semibold tracking-[-0.04em]"
@@ -28,7 +31,8 @@ export function Navbar() {
             <span className="text-lg">Nawab Tech</span>
           </a>
 
-          <div className="hidden items-center gap-8 md:flex">
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-7 md:flex">
             {links.map((link) => (
               <a
                 key={link.href}
@@ -39,6 +43,10 @@ export function Navbar() {
               </a>
             ))}
 
+            <div className="ml-2">
+              <ThemeToggle />
+            </div>
+
             <a
               href="#contact"
               className="bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
@@ -47,17 +55,23 @@ export function Navbar() {
             </a>
           </div>
 
-          <button
-            type="button"
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            onClick={() => setOpen((value) => !value)}
-            className="flex size-10 items-center justify-center border border-border md:hidden"
-          >
-            {open ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          {/* Mobile Controls */}
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+
+            <button
+              type="button"
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              onClick={() => setOpen((value) => !value)}
+              className="flex size-10 items-center justify-center border border-border"
+            >
+              {open ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </nav>
 
+        {/* Mobile Navigation */}
         {open && (
           <div className="border-t border-border py-6 md:hidden">
             <div className="flex flex-col">
