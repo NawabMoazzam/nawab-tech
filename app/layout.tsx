@@ -27,6 +27,7 @@ export const metadata: Metadata = {
     "React development",
     "TypeScript development",
     "custom software development",
+    "API integration",
   ],
 
   authors: [{ name: "Nawab Tech" }],
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
 
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "en_GB",
     url: siteUrl,
     siteName: "Nawab Tech",
     title: "Nawab Tech — Web Development & Custom Software",

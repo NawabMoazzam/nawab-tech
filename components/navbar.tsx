@@ -14,14 +14,14 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="relative z-50 border-b border-border">
+    <header className="relative z-50 border-b border-border bg-background">
       <div className="container-main">
         <nav className="flex h-20 items-center justify-between">
           <a
             href="#"
             className="flex items-center gap-3 font-semibold tracking-[-0.04em]"
           >
-            <span className="flex size-8 items-center justify-center bg-foreground text-sm text-white">
+            <span className="flex size-9 items-center justify-center bg-foreground text-sm text-background">
               N
             </span>
 
@@ -33,7 +33,7 @@ export function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm text-muted transition-colors hover:text-foreground"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 {link.label}
               </a>
@@ -41,7 +41,7 @@ export function Navbar() {
 
             <a
               href="#contact"
-              className="border border-foreground px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground hover:text-white"
+              className="bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
             >
               Start a project
             </a>
@@ -50,7 +50,8 @@ export function Navbar() {
           <button
             type="button"
             aria-label={open ? "Close menu" : "Open menu"}
-            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
             className="flex size-10 items-center justify-center border border-border md:hidden"
           >
             {open ? <X size={20} /> : <Menu size={20} />}
@@ -74,7 +75,7 @@ export function Navbar() {
               <a
                 href="#contact"
                 onClick={() => setOpen(false)}
-                className="mt-5 bg-foreground px-5 py-4 text-center text-sm font-medium text-white"
+                className="mt-5 bg-foreground px-5 py-4 text-center text-sm font-medium text-background"
               >
                 Start a project
               </a>
