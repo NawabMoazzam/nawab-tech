@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import Link from "next/link";
 
 const links = [
   { label: "Services", href: "#services" },
@@ -20,8 +21,8 @@ export function Navbar() {
       <div className="container-main">
         <nav className="flex h-20 items-center justify-between">
           {/* Brand */}
-          <a
-            href="#"
+          <Link
+            href="/"
             className="flex items-center gap-3 font-semibold tracking-[-0.04em]"
           >
             <span className="flex size-9 items-center justify-center bg-foreground text-sm text-background">
@@ -29,30 +30,30 @@ export function Navbar() {
             </span>
 
             <span className="text-lg">Nawab Tech</span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden items-center gap-7 md:flex">
             {links.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
 
             <div className="ml-2">
               <ThemeToggle />
             </div>
 
-            <a
+            <Link
               href="#contact"
               className="bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
             >
               Start a project
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Controls */}
@@ -76,23 +77,23 @@ export function Navbar() {
           <div className="border-t border-border py-6 md:hidden">
             <div className="flex flex-col">
               {links.map((link) => (
-                <a
+                <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className="border-b border-border py-4 text-lg"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
 
-              <a
+              <Link
                 href="#contact"
                 onClick={() => setOpen(false)}
                 className="mt-5 bg-foreground px-5 py-4 text-center text-sm font-medium text-background"
               >
                 Start a project
-              </a>
+              </Link>
             </div>
           </div>
         )}

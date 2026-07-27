@@ -1,8 +1,8 @@
-import { ThemeProvider } from "@/components/theme-provider";
 import type { Metadata } from "next";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const siteUrl = "https://nawabtech.com";
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL!;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -13,24 +13,27 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Nawab Tech builds modern business websites, custom web applications, dashboards, and digital systems designed around how businesses actually work.",
+    "Nawab Tech builds high-performing business websites, custom web applications, dashboards, and digital systems designed around how businesses actually work.",
 
   keywords: [
-    "web development",
     "web development services",
     "custom web development",
     "business website development",
-    "custom web applications",
+    "custom web application development",
     "dashboard development",
-    "admin dashboard development",
-    "Next.js development",
-    "React development",
-    "TypeScript development",
     "custom software development",
-    "API integration",
+    "API integration services",
   ],
 
-  authors: [{ name: "Nawab Tech" }],
+  applicationName: "Nawab Tech",
+
+  authors: [
+    {
+      name: "Nawab Tech",
+      url: siteUrl,
+    },
+  ],
+
   creator: "Nawab Tech",
   publisher: "Nawab Tech",
 
@@ -45,19 +48,20 @@ export const metadata: Metadata = {
     siteName: "Nawab Tech",
     title: "Nawab Tech — Web Development & Custom Software",
     description:
-      "Modern websites, custom web applications, dashboards, and digital systems built around your business.",
+      "High-performing websites, custom web applications, dashboards, and digital systems built around your business.",
   },
 
   twitter: {
     card: "summary_large_image",
     title: "Nawab Tech — Web Development & Custom Software",
     description:
-      "Modern websites, custom web applications, dashboards, and digital systems built around your business.",
+      "High-performing websites, custom web applications, dashboards, and digital systems built around your business.",
   },
 
   robots: {
     index: true,
     follow: true,
+
     googleBot: {
       index: true,
       follow: true,
@@ -71,10 +75,18 @@ export const metadata: Metadata = {
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
+
+  "@id": `${siteUrl}/#organization`,
+
   name: "Nawab Tech",
+
   url: siteUrl,
-  description: "Web development and custom software services for businesses.",
+
+  description:
+    "Nawab Tech provides web development, custom web applications, dashboards, and digital systems for businesses.",
+
   areaServed: "Worldwide",
+
   serviceType: [
     "Web Development",
     "Business Website Development",
@@ -99,6 +111,7 @@ export default function RootLayout({
             __html: JSON.stringify(structuredData),
           }}
         />
+
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
