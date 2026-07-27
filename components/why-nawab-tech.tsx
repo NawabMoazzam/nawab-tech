@@ -18,7 +18,7 @@ const principles = [
     number: "02",
     title: "Clear communication",
     description:
-      "No unnecessary technical jargon. You should always understand what we&apos;re building, why we&apos;re building it, and what happens next.",
+      "No unnecessary technical jargon. You should always understand what we're building, why we're building it, and what happens next.",
     icon: MessageCircle,
   },
   {
