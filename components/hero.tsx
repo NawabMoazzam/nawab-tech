@@ -83,7 +83,7 @@ export function Hero() {
           </div>
 
           {/* System Visual */}
-          <div className="relative flex min-h-[520px] flex-col justify-between p-6 sm:p-10 lg:col-span-5 lg:min-h-0 lg:p-8">
+          <div className="relative flex min-h-130 flex-col justify-between p-6 sm:p-10 lg:col-span-5 lg:min-h-0 lg:p-8">
             <div className="flex justify-between text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
               <span>01 / Digital system</span>
               <span>Nawab Tech</span>
