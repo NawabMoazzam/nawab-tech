@@ -20,6 +20,10 @@ const navLinks = [
     label: "About",
     href: "/#about",
   },
+  {
+    label: "Blog",
+    href: "/blog",
+  },
 ];
 
 export function Navbar() {
@@ -34,14 +38,12 @@ export function Navbar() {
             href="/"
             className="flex items-center gap-3 font-semibold tracking-[-0.04em]"
           >
-            {/* <span className="flex size-9 items-center justify-center bg-foreground text-sm text-background">
-              N
-            </span> */}
             <Image
-              src={"/Nawab-Tech-Dark.png"}
+              src={"/nawab-tech-logo.png"}
               alt="Nawab Tech"
               width={36}
               height={36}
+              className="rounded-xl border border-border object-cover"
             />
 
             <span className="text-lg">Nawab Tech</span>
@@ -103,7 +105,7 @@ export function Navbar() {
               ))}
 
               <Link
-                href="#contact"
+                href="/contact"
                 onClick={() => setOpen(false)}
                 className="mt-5 bg-foreground px-5 py-4 text-center text-sm font-medium text-background"
               >

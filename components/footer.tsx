@@ -1,4 +1,5 @@
 import { ArrowUpRight, Mail } from "lucide-react";
+import Image from "next/image";
 
 const serviceLinks = [
   { label: "Business Websites", href: "/services/web-development" },
@@ -23,6 +24,8 @@ const companyLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
+const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+
 export function Footer() {
   return (
     <footer className="border-t border-border">
@@ -35,9 +38,13 @@ export function Footer() {
               href="#"
               className="flex w-fit items-center gap-3 font-semibold tracking-[-0.04em]"
             >
-              <span className="flex size-9 items-center justify-center bg-foreground text-sm text-background">
-                N
-              </span>
+              <Image
+                src={"/nawab-tech-logo.png"}
+                alt="Nawab Tech"
+                width={36}
+                height={36}
+                className="rounded-xl border border-border object-cover"
+              />
 
               <span className="text-lg">Nawab Tech</span>
             </a>
@@ -98,7 +105,7 @@ export function Footer() {
 
             <div className="mt-8 flex flex-col gap-4">
               <a
-                href="mailto:hello@nawabtech.com"
+                href={`mailto:${contactEmail}`}
                 className="flex items-center gap-2 text-sm transition-colors hover:text-primary"
               >
                 <Mail size={15} />
