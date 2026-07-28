@@ -11,7 +11,7 @@ export function ServiceCTA({
   title,
   description,
   ctaLabel = "Tell us what you're building",
-  ctaHref = "/#contact",
+  ctaHref = "/contact",
 }: ServiceCTAProps) {
   return (
     <section className="section-border">

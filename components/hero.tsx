@@ -61,7 +61,7 @@ export function Hero() {
 
               <div className="flex flex-col justify-end gap-5 lg:items-end">
                 <a
-                  href="#contact"
+                  href="/contact"
                   className="group flex w-fit items-center gap-3 bg-primary px-6 py-4 text-sm font-medium text-primary-foreground transition-transform hover:-translate-y-0.5"
                 >
                   Start a project

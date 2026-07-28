@@ -196,56 +196,39 @@
    Nawab Tech Editorial Utilities
 ------------------------------------------------- */
 
-@layer utilities {
+@layer components {
   .container-main {
-    width: min(100% - 2rem, 1440px);
-    margin-inline: auto;
+    @apply mx-auto w-full max-w-[1600px];
   }
 
   .section-border {
     @apply border-t border-border;
   }
 
-  .display-text {
-    font-size: clamp(3.5rem, 9vw, 9rem);
-    line-height: 0.86;
-    letter-spacing: -0.075em;
-    font-weight: 500;
+  .section-title {
+    @apply text-4xl font-medium leading-[0.95] tracking-[-0.06em] sm:text-5xl lg:text-6xl;
   }
 
-  .section-title {
-    font-size: clamp(2.5rem, 5vw, 5.5rem);
-    line-height: 0.92;
-    letter-spacing: -0.065em;
-    font-weight: 500;
+  .display-text {
+    @apply text-[clamp(3.5rem,9vw,9rem)] font-medium leading-[0.85] tracking-[-0.08em];
   }
 
   .eyebrow {
-    font-size: 0.68rem;
-    line-height: 1;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    font-weight: 600;
+    @apply text-xs font-medium uppercase tracking-[0.12em];
   }
 
   .editorial-grid {
     background-image: linear-gradient(
       to right,
-      color-mix(in oklch, var(--foreground) 6%, transparent) 1px,
-      transparent 1px
+      transparent calc(50% - 0.5px),
+      hsl(var(--border)) calc(50% - 0.5px),
+      hsl(var(--border)) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
     );
-    background-size: 25% 100%;
   }
 
-  .editorial-hover {
-    transition:
-      background-color 200ms ease,
-      color 200ms ease,
-      transform 200ms ease;
-  }
-
-  .editorial-hover:hover {
-    background-color: var(--muted);
+  .form-input {
+    @apply mt-4 w-full border-0 border-b bg-transparent px-0 py-3 text-base outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary;
   }
 }
 

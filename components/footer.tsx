@@ -17,10 +17,10 @@ const serviceLinks = [
 ];
 
 const companyLinks = [
-  { label: "About", href: "#about" },
-  { label: "Services", href: "#services" },
-  { label: "Process", href: "#process" },
-  { label: "Contact", href: "#contact" },
+  { label: "About", href: "/#about" },
+  { label: "Services", href: "/services" },
+  { label: "Process", href: "/#process" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export function Footer() {
@@ -47,7 +47,7 @@ export function Footer() {
             </p>
 
             <a
-              href="#contact"
+              href="/contact"
               className="group mt-8 flex w-fit items-center gap-2 text-sm font-medium"
             >
               Start a project

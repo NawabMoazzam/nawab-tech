@@ -13,7 +13,7 @@ export function ServiceHero({
   title,
   description,
   ctaLabel = "Start a project",
-  ctaHref = "/#contact",
+  ctaHref = "/contact",
 }: ServiceHeroProps) {
   return (
     <section className="editorial-grid">

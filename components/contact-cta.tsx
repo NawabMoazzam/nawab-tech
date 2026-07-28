@@ -29,7 +29,7 @@ export function ContactCTA() {
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <a
-                  href={`mailto:${contactEmail}`}
+                  href="/contact"
                   className="group flex items-center justify-center gap-3 bg-primary px-6 py-4 text-sm font-medium text-primary-foreground transition-transform hover:-translate-y-0.5"
                 >
                   <Mail size={17} />

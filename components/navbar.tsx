@@ -5,12 +5,21 @@ import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
+import Image from "next/image";
 
-const links = [
-  { label: "Services", href: "#services" },
-  { label: "Work", href: "#work" },
-  { label: "Process", href: "#process" },
-  { label: "About", href: "#about" },
+const navLinks = [
+  {
+    label: "Services",
+    href: "/#services",
+  },
+  {
+    label: "Process",
+    href: "/#process",
+  },
+  {
+    label: "About",
+    href: "/#about",
+  },
 ];
 
 export function Navbar() {
@@ -25,16 +34,22 @@ export function Navbar() {
             href="/"
             className="flex items-center gap-3 font-semibold tracking-[-0.04em]"
           >
-            <span className="flex size-9 items-center justify-center bg-foreground text-sm text-background">
+            {/* <span className="flex size-9 items-center justify-center bg-foreground text-sm text-background">
               N
-            </span>
+            </span> */}
+            <Image
+              src={"/Nawab-Tech-Dark.png"}
+              alt="Nawab Tech"
+              width={36}
+              height={36}
+            />
 
             <span className="text-lg">Nawab Tech</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden items-center gap-7 md:flex">
-            {links.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -49,7 +64,7 @@ export function Navbar() {
             </div>
 
             <Link
-              href="#contact"
+              href="/contact"
               className="bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
             >
               Start a project
@@ -76,7 +91,7 @@ export function Navbar() {
         {open && (
           <div className="border-t border-border py-6 md:hidden">
             <div className="flex flex-col">
-              {links.map((link) => (
+              {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
