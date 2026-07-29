@@ -19,7 +19,7 @@ const services = [
       "Performance optimisation",
     ],
     icon: Globe2,
-    href: "#contact",
+    href: "/services/web-development",
   },
   {
     number: "02",
@@ -33,7 +33,7 @@ const services = [
       "Role-based systems",
     ],
     icon: Layers3,
-    href: "#contact",
+    href: "/services/custom-web-applications",
   },
   {
     number: "03",
@@ -47,7 +47,7 @@ const services = [
       "Reporting systems",
     ],
     icon: BarChart3,
-    href: "#contact",
+    href: "/services/dashboard-development",
   },
   {
     number: "04",
@@ -61,7 +61,7 @@ const services = [
       "Data synchronisation",
     ],
     icon: Workflow,
-    href: "#contact",
+    href: "/services/automation-integrations",
   },
 ];
 

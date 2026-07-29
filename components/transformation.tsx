@@ -39,20 +39,22 @@ export function Transformation() {
         <div className="grid lg:grid-cols-12">
           {/* Introduction */}
           <div className="border-x border-border p-6 sm:p-10 lg:col-span-4 lg:p-14">
-            <div className="eyebrow text-muted-foreground">The opportunity</div>
+            <div className="eyebrow text-muted-foreground">
+              {" "}
+              From problems to possibilities
+            </div>
 
             <h2 className="section-title mt-8">
-              Your business
+              Your business deserves
               <br />
-              deserves a
-              <br />
-              <span className="text-primary">better system.</span>
+              <span className="text-primary">better digital tools.</span>
             </h2>
 
-            <p className="mt-10 max-w-sm leading-relaxed text-muted-foreground">
-              Many businesses grow by adding more tools, more spreadsheets, and
-              more manual processes. Eventually, those tools start working
-              against the people using them.
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              An outdated website can make a business harder to trust. Scattered
+              tools and manual processes can make everyday work harder than it
+              needs to be. We build digital experiences and systems that make
+              businesses clearer, faster, and easier to run.
             </p>
           </div>
 

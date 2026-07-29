@@ -39,7 +39,7 @@ const principles = [
 
 export function WhyNawabTech() {
   return (
-    <section id="about" className="section-border">
+    <section className="section-border">
       <div className="container-main">
         <div className="grid border-x border-border lg:grid-cols-12">
           {/* Heading */}
@@ -61,7 +61,7 @@ export function WhyNawabTech() {
             </p>
 
             <a
-              href="#contact"
+              href="/contact"
               className="group mt-10 flex w-fit items-center gap-3 text-sm font-medium"
             >
               Let&apos;s talk about your project
