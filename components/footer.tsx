@@ -1,5 +1,6 @@
 import { ArrowUpRight, Mail } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const serviceLinks = [
   { label: "Business Websites", href: "/services/web-development" },
@@ -18,9 +19,9 @@ const serviceLinks = [
 ];
 
 const companyLinks = [
-  { label: "About", href: "/#about" },
+  { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
-  { label: "Process", href: "/#process" },
+  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -34,20 +35,19 @@ export function Footer() {
         <div className="grid border-x border-border lg:grid-cols-12">
           {/* Brand */}
           <div className="border-b border-border p-6 sm:p-10 lg:col-span-5 lg:border-b-0 lg:border-r lg:p-14">
-            <a
-              href="#"
-              className="flex w-fit items-center gap-3 font-semibold tracking-[-0.04em]"
-            >
+            <Link href="/" className="flex items-center gap-3">
               <Image
-                src={"/nawab-tech-logo.png"}
+                src="/nawab-tech-logo.png"
                 alt="Nawab Tech"
-                width={36}
-                height={36}
-                className="rounded-xl border border-border object-cover"
+                width={40}
+                height={40}
+                priority
               />
 
-              <span className="text-lg">Nawab Tech</span>
-            </a>
+              <span className="text-sm font-semibold tracking-tight">
+                Nawab Tech
+              </span>
+            </Link>
 
             <p className="mt-8 max-w-sm leading-relaxed text-muted-foreground">
               Digital products built around the way your business works.

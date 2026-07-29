@@ -10,15 +10,11 @@ import Image from "next/image";
 const navLinks = [
   {
     label: "Services",
-    href: "/#services",
-  },
-  {
-    label: "Process",
-    href: "/#process",
+    href: "/services",
   },
   {
     label: "About",
-    href: "/#about",
+    href: "/about",
   },
   {
     label: "Blog",
@@ -34,19 +30,18 @@ export function Navbar() {
       <div className="container-main">
         <nav className="flex h-20 items-center justify-between px-6 sm:px-0">
           {/* Brand */}
-          <Link
-            href="/"
-            className="flex items-center gap-3 font-semibold tracking-[-0.04em]"
-          >
+          <Link href="/" className="flex items-center gap-3">
             <Image
-              src={"/nawab-tech-logo.png"}
+              src="/nawab-tech-logo.png"
               alt="Nawab Tech"
-              width={36}
-              height={36}
-              className="rounded-xl border border-border object-cover"
+              width={40}
+              height={40}
+              priority
             />
 
-            <span className="text-lg">Nawab Tech</span>
+            <span className="text-sm font-semibold tracking-tight">
+              Nawab Tech
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
