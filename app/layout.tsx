@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
+import { siteConfig } from "@/lib/site";
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+const siteUrl = siteConfig.url;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

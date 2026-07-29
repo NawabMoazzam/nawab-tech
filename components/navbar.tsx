@@ -32,7 +32,7 @@ export function Navbar() {
   return (
     <header className="relative z-50 border-b border-border bg-background">
       <div className="container-main">
-        <nav className="flex h-20 items-center justify-between">
+        <nav className="flex h-20 items-center justify-between px-6 sm:px-0">
           {/* Brand */}
           <Link
             href="/"
@@ -91,7 +91,7 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {open && (
-          <div className="border-t border-border py-6 md:hidden">
+          <div className="border-t border-border p-6 md:hidden">
             <div className="flex flex-col">
               {navLinks.map((link) => (
                 <Link

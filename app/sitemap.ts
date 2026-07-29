@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+import { getAllPosts } from "@/lib/blog/posts";
+import { siteConfig } from "@/lib/site";
+
+const siteUrl = siteConfig.url;
 
 const serviceRoutes = [
   "web-development",
@@ -27,6 +30,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/contact`,
       priority: 0.8,
     },
+    {
+      url: `${siteConfig.url}/blog`,
+      priority: 0.8,
+    },
   ];
 
   const services = serviceRoutes.map((service) => ({
@@ -34,7 +41,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  return [...staticRoutes, ...services].map((route) => ({
+  const blogPosts = getAllPosts().map((post) => ({
+    url: `${siteConfig.url}/blog/${post.slug}`,
+    priority: post.featured ? 0.8 : 0.7,
+  }));
+
+  return [...staticRoutes, ...services, ...blogPosts].map((route) => ({
     ...route,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,

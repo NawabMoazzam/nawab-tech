@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { siteConfig } from "@/lib/site";
 import { ArrowLeft } from "lucide-react";
 
 import { Footer } from "@/components/footer";
@@ -60,21 +61,28 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const articleStructuredData = {
     "@context": "https://schema.org",
     "@type": "Article",
+
     headline: post.title,
+
     description: post.seo.description,
+
     datePublished: post.publishedAt,
+
     dateModified: post.updatedAt ?? post.publishedAt,
+
     author: {
       "@type": "Organization",
       name: post.author.name,
     },
+
     publisher: {
       "@type": "Organization",
-      name: "Nawab Tech",
+      name: siteConfig.name,
     },
+
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://nawabtech.com/blog/${post.slug}`,
+      "@id": `${siteConfig.url}/blog/${post.slug}`,
     },
   };
 
@@ -138,7 +146,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <div className="border-x border-border">
                 <div className="mx-auto max-w-3xl px-6 py-16 sm:px-10 sm:py-20 lg:py-24">
                   <div className="whitespace-pre-line text-lg leading-[1.8] text-foreground/90">
-                    {post.content}
+                    {post.contentPath}
                   </div>
                 </div>
               </div>

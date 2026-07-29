@@ -1,15 +1,12 @@
-export type BlogCategory = {
-  name: string;
-  slug: string;
-};
-
 export type BlogPost = {
   slug: string;
   title: string;
   excerpt: string;
-  content: string;
 
-  category: BlogCategory;
+  category: {
+    name: string;
+    slug: string;
+  };
 
   tags: string[];
 
@@ -26,6 +23,8 @@ export type BlogPost = {
   featured?: boolean;
 
   coverImage?: string;
+
+  contentPath: string;
 
   seo: {
     title: string;
