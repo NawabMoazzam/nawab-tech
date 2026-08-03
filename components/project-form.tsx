@@ -9,31 +9,51 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { enquirySchema } from "@/schemas/enquiry";
+import type { EnquiryInput } from "@/schemas/enquiry";
+import { createEnquiry } from "@/app/actions/contact";
 
-type ProjectFormData = {
-  name: string;
-  email: string;
-  company: string;
-  projectType: string;
-  budget: string;
-  timeline: string;
-  message: string;
-};
-
-const projectTypes = [
-  "Business Website",
-  "Custom Web Application",
-  "Dashboard",
-  "API Integration",
-  "Something Else",
+const Services: { label: string; value: EnquiryInput["service"] }[] = [
+  {
+    label: "Business Website",
+    value: "business-websites",
+  },
+  {
+    label: "Custom Web Application",
+    value: "custom-web-applications",
+  },
+  {
+    label: "Dashboard Development",
+    value: "dashboard-development",
+  },
+  {
+    label: "Automation & Integrations",
+    value: "automation-integrations",
+  },
+  {
+    label: "Not sure yet",
+    value: "not-sure",
+  },
 ];
-
+// ["under-500", "500-2000", "2000-5000", "5000-plus"]
 const budgetOptions = [
-  "Not sure yet",
-  "Under £1,000",
-  "£1,000 – £3,000",
-  "£3,000 – £7,000",
-  "£7,000+",
+  {
+    label: "Under $500",
+    value: "under-500",
+  },
+  {
+    label: "$500 – $2,000",
+    value: "500-2000",
+  },
+  {
+    label: "$2,000 – $5,000",
+    value: "2000-5000",
+  },
+  {
+    label: "$5,000+",
+    value: "5000-plus",
+  },
 ];
 
 const timelineOptions = [
@@ -46,6 +66,7 @@ const timelineOptions = [
 
 export function ProjectForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   const {
     register,
@@ -54,21 +75,33 @@ export function ProjectForm() {
     reset,
     setValue,
     watch,
-  } = useForm<ProjectFormData>();
+  } = useForm<EnquiryInput>({
+    resolver: zodResolver(enquirySchema),
+    defaultValues: {
+      company: "",
+      budget: "",
+      timeline: "",
+    },
+  });
 
-  const projectType = watch("projectType");
+  const service = watch("service");
   const budget = watch("budget");
   const timeline = watch("timeline");
 
-  async function onSubmit(data: ProjectFormData) {
-    console.log("Project enquiry:", data);
+  async function onSubmit(data: EnquiryInput) {
+    const result = await createEnquiry(data);
 
-    // TODO:
-    // Replace this with a POST request to your backend.
+    console.log("result: ", result);
 
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    if (!result.success) {
+      setServerError(
+        result.errors.root?.[0] ?? "Unable to submit your enquiry.",
+      );
+      return;
+    }
 
     setSubmitted(true);
+
     reset();
   }
 
@@ -180,7 +213,7 @@ export function ProjectForm() {
       {/* Project Type */}
       <div className="p-6 sm:p-10 lg:p-12">
         <label
-          htmlFor="projectType"
+          htmlFor="Service"
           className="text-xs uppercase tracking-widest text-muted-foreground"
         >
           What do you need? *
@@ -188,9 +221,9 @@ export function ProjectForm() {
 
         <input
           type="hidden"
-          id="projectType"
-          {...register("projectType", {
-            required: "Please select a project type.",
+          id="service"
+          {...register("service", {
+            required: "Please select a service.",
           })}
         />
 
@@ -198,29 +231,28 @@ export function ProjectForm() {
           <DropdownMenuTrigger
             render={
               <button type="button" className="form-input text-left">
-                <span className={projectType ? "" : "text-muted-foreground"}>
-                  {projectType || "Select a project type"}
+                <span className={service ? "" : "text-muted-foreground"}>
+                  {service || "Select a project type"}
                 </span>
               </button>
             }
           />
 
           <DropdownMenuContent>
-            {projectTypes.map((type) => (
+            {Services.map((item) => (
               <DropdownMenuItem
-                key={type}
-                onClick={() => setValue("projectType", type)}
-                className={projectType === type ? "font-semibold" : ""}
+                key={item.value}
+                onClick={() => setValue("service", item.value)}
               >
-                {type}
+                {item.label}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {errors.projectType && (
+        {errors.service && (
           <p className="mt-2 text-xs text-destructive">
-            {errors.projectType.message}
+            {errors.service.message}
           </p>
         )}
       </div>
@@ -251,11 +283,11 @@ export function ProjectForm() {
             <DropdownMenuContent>
               {budgetOptions.map((option) => (
                 <DropdownMenuItem
-                  key={option}
-                  onClick={() => setValue("budget", option)}
-                  className={budget === option ? "font-semibold" : ""}
+                  key={option.value}
+                  onClick={() => setValue("budget", option.value)}
+                  className={budget === option.value ? "font-semibold" : ""}
                 >
-                  {option}
+                  {option.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -298,20 +330,20 @@ export function ProjectForm() {
         </div>
       </div>
 
-      {/* Message */}
+      {/* Project Details */}
       <div className="p-6 sm:p-10 lg:p-12">
         <label
-          htmlFor="message"
+          htmlFor="project"
           className="text-xs uppercase tracking-widest text-muted-foreground"
         >
           Tell us about the project *
         </label>
 
         <textarea
-          id="message"
+          id="project"
           rows={7}
           placeholder="What are you trying to build? What problem are you trying to solve? Tell us anything that would help us understand the project."
-          {...register("message", {
+          {...register("project", {
             required: "Please tell us a little about your project.",
             minLength: {
               value: 20,
@@ -321,9 +353,9 @@ export function ProjectForm() {
           className="form-input resize-none"
         />
 
-        {errors.message && (
+        {errors.project && (
           <p className="mt-2 text-xs text-destructive">
-            {errors.message.message}
+            {errors.project.message}
           </p>
         )}
       </div>
@@ -334,6 +366,9 @@ export function ProjectForm() {
           By submitting this form, you agree to be contacted about your enquiry.
           We don&apos;t sell or share your information.
         </p>
+        {serverError && (
+          <p className="text-sm text-destructive">{serverError}</p>
+        )}
 
         <button
           type="submit"

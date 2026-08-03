@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 const siteUrl = siteConfig.url;
 
@@ -120,6 +122,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <SpeedInsights />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
