@@ -4,6 +4,7 @@ import "./globals.css";
 import { siteConfig } from "@/lib/site";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import { localBusinessSchema } from "@/lib/schema-markup";
 
 const siteUrl = siteConfig.url;
 
@@ -75,31 +76,6 @@ export const metadata: Metadata = {
   },
 };
 
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-
-  "@id": `${siteUrl}/#organization`,
-
-  name: "Nawab Tech",
-
-  url: siteUrl,
-
-  description:
-    "Nawab Tech provides web development, custom web applications, dashboards, and digital systems for businesses.",
-
-  areaServed: "Worldwide",
-
-  serviceType: [
-    "Web Development",
-    "Business Website Development",
-    "Custom Web Application Development",
-    "Dashboard Development",
-    "Custom Software Development",
-    "API Integration",
-  ],
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -111,7 +87,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData),
+            __html: JSON.stringify(localBusinessSchema).replace(
+              /</g,
+              "\\u003c",
+            ),
           }}
         />
 
