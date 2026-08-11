@@ -1,7 +1,7 @@
 import { ArrowUpRight, Mail, MessageCircle } from "lucide-react";
+import { siteConfig } from "@/lib/site";
 
 export function ContactCTA() {
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   return (
     <section id="contact" className="section-border">
       <div className="container-main">
@@ -41,7 +41,7 @@ export function ContactCTA() {
                 </a>
 
                 <a
-                  href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_PHONE}`}
+                  href={siteConfig.phone}
                   className="flex items-center justify-center gap-3 border border-border px-6 py-4 text-sm font-medium transition-colors hover:bg-muted"
                 >
                   <MessageCircle size={17} />
@@ -67,10 +67,10 @@ export function ContactCTA() {
 
                   <div className="mt-8 space-y-3 text-sm">
                     <a
-                      href={`mailto:${contactEmail}`}
+                      href={`mailto:${siteConfig.email}`}
                       className="block transition-colors hover:text-primary"
                     >
-                      {contactEmail}
+                      {siteConfig.email}
                     </a>
 
                     <span className="block text-muted-foreground">

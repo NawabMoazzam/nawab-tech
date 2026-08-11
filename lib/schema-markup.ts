@@ -47,7 +47,7 @@ export const localBusinessSchema: WithContext<LocalBusiness> = {
     opens: "00:00",
     closes: "23:59",
   },
-  sameAs: siteConfig.social.facebook,
+  sameAs: [siteConfig.social.facebook, siteConfig.social.github],
 };
 
 const itemListElement: ListItem[] = navLinks.map((link, index) => ({

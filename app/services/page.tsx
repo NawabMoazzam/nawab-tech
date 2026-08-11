@@ -36,10 +36,10 @@ const services = [
   },
   {
     number: "04",
-    title: "API Integrations",
+    title: "Automation & Integrations",
     description:
-      "Connect your existing tools and services through reliable integrations and automated workflows.",
-    href: "/services/api-integrations",
+      "Automate repetitive business workflows with AI, custom integrations, APIs, and intelligent systems built around the tools your business already uses.",
+    href: "/services/automation-integrations",
   },
 ];
 

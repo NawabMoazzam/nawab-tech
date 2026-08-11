@@ -10,9 +10,9 @@ export const siteConfig = {
 
   social: {
     facebook: "https://www.facebook.com/nawabtech",
+    github: "https://github.com/NawabMoazzam",
     // Add these when ready
     // linkedin: "",
-    // github: "",
     // instagram: "",
   },
 } as const;
