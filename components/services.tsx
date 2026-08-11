@@ -1,6 +1,7 @@
 import {
   ArrowUpRight,
   BarChart3,
+  Bot,
   Globe2,
   Layers3,
   Workflow,
@@ -51,16 +52,16 @@ const services = [
   },
   {
     number: "04",
-    title: "Automation & Integrations",
+    title: "AI Automation & Integrations",
     description:
-      "Connect the systems you already use and remove repetitive work through APIs, integrations, and smarter workflows.",
+      "Use AI, APIs, and intelligent workflows to automate repetitive work, connect your business tools, and build smarter processes.",
     features: [
+      "AI-powered workflows",
+      "AI assistants & chatbots",
       "API integrations",
-      "Third-party services",
-      "Automated workflows",
-      "Data synchronisation",
+      "Business process automation",
     ],
-    icon: Workflow,
+    icon: Bot,
     href: "/services/automation-integrations",
   },
 ];
@@ -255,11 +256,10 @@ function ServiceVisual({ index }: { index: number }) {
   return (
     <div className="relative flex size-56 items-center justify-center">
       <div className="absolute size-36 rounded-full border border-border" />
-
       <div className="absolute size-24 rounded-full border border-foreground" />
 
       <div className="relative flex size-12 items-center justify-center bg-primary text-primary-foreground">
-        <Workflow size={20} />
+        <Bot size={20} />
       </div>
 
       <span className="absolute left-0 top-1/2 -translate-y-1/2 text-[8px] uppercase tracking-[0.1em]">
@@ -271,7 +271,7 @@ function ServiceVisual({ index }: { index: number }) {
       </span>
 
       <span className="absolute left-1/2 top-0 -translate-x-1/2 text-[8px] uppercase tracking-[0.1em]">
-        Data
+        AI
       </span>
 
       <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[8px] uppercase tracking-[0.1em]">
