@@ -34,6 +34,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteConfig.url}/blog`,
       priority: 0.8,
     },
+    {
+      url: `${siteConfig.url}/faq`,
+      priority: 0.8,
+    },
   ];
 
   const services = serviceRoutes.map((service) => ({

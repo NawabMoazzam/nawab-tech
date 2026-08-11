@@ -1,5 +1,6 @@
 "use client";
 
+import { faqSchema } from "@/lib/schema-markup";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
 
@@ -38,70 +39,78 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section className="section-border">
-      <div className="container-main">
-        <div className="grid border-x border-border lg:grid-cols-12">
-          {/* Heading */}
-          <div className="p-6 sm:p-10 lg:col-span-4 lg:p-14">
-            <div className="eyebrow text-muted-foreground">
-              Frequently asked
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqSchema(faqs)).replace(/</g, "\\u003c"),
+        }}
+      />
+      <section className="section-border">
+        <div className="container-main">
+          <div className="grid border-x border-border lg:grid-cols-12">
+            {/* Heading */}
+            <div className="p-6 sm:p-10 lg:col-span-4 lg:p-14">
+              <div className="eyebrow text-muted-foreground">
+                Frequently asked
+              </div>
+
+              <h2 className="section-title mt-8">
+                Questions
+                <br />
+                worth
+                <br />
+                <span className="text-primary">asking.</span>
+              </h2>
+
+              <p className="mt-8 max-w-sm leading-relaxed text-muted-foreground">
+                Not sure if we&apos;re the right fit? Here are some of the
+                questions we hear most often.
+              </p>
             </div>
 
-            <h2 className="section-title mt-8">
-              Questions
-              <br />
-              worth
-              <br />
-              <span className="text-primary">asking.</span>
-            </h2>
+            {/* Accordion */}
+            <div className="border-t border-border lg:col-span-8 lg:border-l lg:border-t-0">
+              <Accordion.Root type="single" collapsible>
+                {faqs.map((faq, index) => (
+                  <Accordion.Item
+                    key={faq.question}
+                    value={`item-${index}`}
+                    className="border-b border-border"
+                  >
+                    <Accordion.Header>
+                      <Accordion.Trigger className="group flex w-full items-center justify-between gap-8 p-6 text-left sm:p-10 lg:p-12">
+                        <span className="flex gap-6 text-lg font-medium tracking-tight sm:text-xl">
+                          <span className="text-xs text-muted-foreground">
+                            0{index + 1}
+                          </span>
 
-            <p className="mt-8 max-w-sm leading-relaxed text-muted-foreground">
-              Not sure if we&apos;re the right fit? Here are some of the
-              questions we hear most often.
-            </p>
-          </div>
-
-          {/* Accordion */}
-          <div className="border-t border-border lg:col-span-8 lg:border-l lg:border-t-0">
-            <Accordion.Root type="single" collapsible>
-              {faqs.map((faq, index) => (
-                <Accordion.Item
-                  key={faq.question}
-                  value={`item-${index}`}
-                  className="border-b border-border"
-                >
-                  <Accordion.Header>
-                    <Accordion.Trigger className="group flex w-full items-center justify-between gap-8 p-6 text-left sm:p-10 lg:p-12">
-                      <span className="flex gap-6 text-lg font-medium tracking-tight sm:text-xl">
-                        <span className="text-xs text-muted-foreground">
-                          0{index + 1}
+                          {faq.question}
                         </span>
 
-                        {faq.question}
-                      </span>
+                        <span className="flex size-9 shrink-0 items-center justify-center border border-border transition-colors group-data-[state=open]:bg-foreground group-data-[state=open]:text-background">
+                          <ChevronDown
+                            size={16}
+                            className="transition-transform duration-200 group-data-[state=open]:rotate-180"
+                          />
+                        </span>
+                      </Accordion.Trigger>
+                    </Accordion.Header>
 
-                      <span className="flex size-9 shrink-0 items-center justify-center border border-border transition-colors group-data-[state=open]:bg-foreground group-data-[state=open]:text-background">
-                        <ChevronDown
-                          size={16}
-                          className="transition-transform duration-200 group-data-[state=open]:rotate-180"
-                        />
-                      </span>
-                    </Accordion.Trigger>
-                  </Accordion.Header>
-
-                  <Accordion.Content className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                    <div className="px-6 pb-8 pl-[4.5rem] pr-10 sm:px-10 sm:pb-10 sm:pl-[5.5rem] lg:px-12 lg:pb-12 lg:pl-[6.5rem]">
-                      <p className="max-w-2xl leading-relaxed text-muted-foreground">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </Accordion.Content>
-                </Accordion.Item>
-              ))}
-            </Accordion.Root>
+                    <Accordion.Content className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                      <div className="px-6 pb-8 pl-[4.5rem] pr-10 sm:px-10 sm:pb-10 sm:pl-[5.5rem] lg:px-12 lg:pb-12 lg:pl-[6.5rem]">
+                        <p className="max-w-2xl leading-relaxed text-muted-foreground">
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </Accordion.Content>
+                  </Accordion.Item>
+                ))}
+              </Accordion.Root>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

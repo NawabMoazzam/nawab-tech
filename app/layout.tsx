@@ -16,8 +16,7 @@ export const metadata: Metadata = {
     template: "%s | Nawab Tech",
   },
 
-  description:
-    "Nawab Tech builds high-performing business websites, custom web applications, dashboards, and digital systems designed around how businesses actually work.",
+  description: siteConfig.description,
 
   keywords: [
     "web development services",

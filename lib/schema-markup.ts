@@ -3,6 +3,7 @@ import {
   LocalBusiness,
   BreadcrumbList,
   ListItem,
+  FAQPage,
 } from "schema-dts";
 import { siteConfig } from "./site";
 import { navLinks } from "@/lib/nav-links";
@@ -46,6 +47,7 @@ export const localBusinessSchema: WithContext<LocalBusiness> = {
     opens: "00:00",
     closes: "23:59",
   },
+  sameAs: siteConfig.social.facebook,
 };
 
 const itemListElement: ListItem[] = navLinks.map((link, index) => ({
@@ -60,3 +62,17 @@ export const breadcrumbSchema: WithContext<BreadcrumbList> = {
   "@type": "BreadcrumbList",
   itemListElement,
 };
+
+export const faqSchema = (faqs: { question: string; answer: string }[]) =>
+  ({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  }) as WithContext<FAQPage>;

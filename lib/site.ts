@@ -9,6 +9,7 @@ export const siteConfig = {
   phone: process.env.NEXT_PUBLIC_CONTACT_PHONE!,
 
   social: {
+    facebook: "https://www.facebook.com/nawabtech",
     // Add these when ready
     // linkedin: "",
     // github: "",
