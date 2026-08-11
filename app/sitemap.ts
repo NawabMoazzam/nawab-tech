@@ -9,7 +9,7 @@ const serviceRoutes = [
   "web-development",
   "custom-web-applications",
   "dashboard-development",
-  "api-integrations",
+  "automation-integrations",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
