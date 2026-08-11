@@ -1,5 +1,11 @@
-import { WithContext, LocalBusiness } from "schema-dts";
+import {
+  WithContext,
+  LocalBusiness,
+  BreadcrumbList,
+  ListItem,
+} from "schema-dts";
 import { siteConfig } from "./site";
+import { navLinks } from "@/lib/nav-links";
 
 const siteUrl = siteConfig.url;
 const phone = siteConfig.phone;
@@ -40,4 +46,17 @@ export const localBusinessSchema: WithContext<LocalBusiness> = {
     opens: "00:00",
     closes: "23:59",
   },
+};
+
+const itemListElement: ListItem[] = navLinks.map((link, index) => ({
+  "@type": "ListItem",
+  position: index + 1,
+  name: link.label,
+  item: `${siteUrl}${link.href}`,
+}));
+
+export const breadcrumbSchema: WithContext<BreadcrumbList> = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement,
 };

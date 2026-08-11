@@ -4,23 +4,9 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { navLinks } from "@/lib/nav-links";
 import Link from "next/link";
 import Image from "next/image";
-
-const navLinks = [
-  {
-    label: "Services",
-    href: "/services",
-  },
-  {
-    label: "About",
-    href: "/about",
-  },
-  {
-    label: "Blog",
-    href: "/blog",
-  },
-];
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
