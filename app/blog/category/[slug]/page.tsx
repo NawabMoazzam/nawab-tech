@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { BlogCard } from "@/components/blog/blog-card";
-import { getAllPosts, getPostsByCategory } from "@/lib/blog/posts";
+import { getAllPublishedPosts, getPostsByCategoryFromDB } from "@/lib/blog/queries";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -14,8 +14,11 @@ type CategoryPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  const categories = new Set(getAllPosts().map((post) => post.category.slug));
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const posts = await getAllPublishedPosts();
+  const categories = new Set(posts.map((post) => post.category.slug));
 
   return Array.from(categories).map((slug) => ({
     slug,
@@ -27,7 +30,7 @@ export async function generateMetadata({
 }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
 
-  const posts = getPostsByCategory(slug);
+  const posts = await getPostsByCategoryFromDB(slug);
 
   if (!posts.length) {
     return {};
@@ -47,7 +50,7 @@ export async function generateMetadata({
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
 
-  const posts = getPostsByCategory(slug);
+  const posts = await getPostsByCategoryFromDB(slug);
 
   if (!posts.length) {
     notFound();

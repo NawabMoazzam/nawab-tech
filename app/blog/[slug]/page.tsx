@@ -6,7 +6,8 @@ import { ArrowLeft } from "lucide-react";
 
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
-import { getAllPosts, getPostBySlug } from "@/lib/blog/posts";
+import { getAllPublishedPosts, getPostBySlugWithContent } from "@/lib/blog/queries";
+import { ArticleContent } from "@/components/blog/article-content";
 
 type BlogPostPageProps = {
   params: Promise<{
@@ -14,8 +15,11 @@ type BlogPostPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return getAllPosts().map((post) => ({
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const posts = await getAllPublishedPosts();
+  return posts.map((post) => ({
     slug: post.slug,
   }));
 }
@@ -25,26 +29,27 @@ export async function generateMetadata({
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
 
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlugWithContent(slug);
 
   if (!post) {
     return {};
   }
 
   return {
-    title: post.seo.title,
-    description: post.seo.description,
+    title: post.seo?.title || `${post.title} | Nawab Tech`,
+    description: post.seo?.description || post.excerpt,
     alternates: {
       canonical: `/blog/${post.slug}`,
     },
     openGraph: {
       type: "article",
-      title: post.seo.title,
-      description: post.seo.description,
-      publishedTime: post.publishedAt,
-      modifiedTime: post.updatedAt ?? post.publishedAt,
-      authors: [post.author.name],
+      title: post.seo?.title || post.title,
+      description: post.seo?.description || post.excerpt,
+      publishedTime: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
+      modifiedTime: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
+      authors: [post.author?.name || "Nawab Tech"],
       tags: post.tags,
+      images: post.coverImage ? [post.coverImage] : undefined,
     },
   };
 }
@@ -52,7 +57,7 @@ export async function generateMetadata({
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
 
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlugWithContent(slug);
 
   if (!post) {
     notFound();
@@ -64,7 +69,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
     headline: post.title,
 
-    description: post.seo.description,
+    description: post.seo?.description || post.excerpt,
 
     datePublished: post.publishedAt,
 
@@ -72,7 +77,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
     author: {
       "@type": "Organization",
-      name: post.author.name,
+      name: post.author?.name || "Nawab Tech",
     },
 
     publisher: {
@@ -84,6 +89,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       "@type": "WebPage",
       "@id": `${siteConfig.url}/blog/${post.slug}`,
     },
+    image: post.coverImage || undefined,
   };
 
   return (
@@ -125,18 +131,30 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </p>
 
                 <div className="mt-10 flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>{post.author.name}</span>
+                  <span>{post.author?.name || "Nawab Tech"}</span>
 
                   <span>•</span>
 
-                  <time dateTime={post.publishedAt}>
-                    {new Intl.DateTimeFormat("en-GB", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    }).format(new Date(post.publishedAt))}
+                  <time dateTime={post.publishedAt ? new Date(post.publishedAt).toISOString() : ""}>
+                    {post.publishedAt
+                      ? new Intl.DateTimeFormat("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        }).format(new Date(post.publishedAt))
+                      : ""}
                   </time>
                 </div>
+
+                {post.coverImage && (
+                  <div className="mt-12">
+                    <img
+                      src={post.coverImage}
+                      alt={post.title}
+                      className="w-full aspect-[16/9] object-cover rounded-lg border"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -145,9 +163,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <div className="container-main">
               <div className="border-x border-border">
                 <div className="mx-auto max-w-3xl px-6 py-16 sm:px-10 sm:py-20 lg:py-24">
-                  <div className="whitespace-pre-line text-lg leading-[1.8] text-foreground/90">
-                    {post.contentPath}
-                  </div>
+                  <ArticleContent content={post.content} />
                 </div>
               </div>
             </div>

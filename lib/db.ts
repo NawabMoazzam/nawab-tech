@@ -1,9 +1,16 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable.");
+function getMongoUri() {
+  if (!MONGODB_URI) {
+    // During build, env may not be set - allow build to continue, but fail at runtime
+    if (process.env.NEXT_PHASE === "phase-production-build") {
+      return "mongodb://localhost:27017/build-placeholder";
+    }
+    throw new Error("Please define the MONGODB_URI environment variable.");
+  }
+  return MONGODB_URI;
 }
 
 // if (MONGODB_URI.startsWith("mongodb+srv://")) {
@@ -34,8 +41,9 @@ export async function connectDB() {
   }
 
   if (!cached.promise) {
+    const uri = getMongoUri();
     cached.promise = mongoose
-      .connect(MONGODB_URI, {
+      .connect(uri, {
         bufferCommands: false,
       })
       .then((mongoose) => {

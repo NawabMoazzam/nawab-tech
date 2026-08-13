@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getAllPosts } from "@/lib/blog/posts";
+import { getAllPublishedPosts } from "@/lib/blog/queries";
 import { siteConfig } from "@/lib/site";
 
 const siteUrl = siteConfig.url;
@@ -12,7 +12,7 @@ const serviceRoutes = [
   "automation-integrations",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [
     {
       url: siteUrl,
@@ -45,10 +45,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  const blogPosts = getAllPosts().map((post) => ({
-    url: `${siteConfig.url}/blog/${post.slug}`,
-    priority: post.featured ? 0.8 : 0.7,
-  }));
+  let blogPosts: { url: string; priority: number }[] = [];
+  try {
+    const posts = await getAllPublishedPosts();
+    blogPosts = posts.map((post) => ({
+      url: `${siteConfig.url}/blog/${post.slug}`,
+      priority: (post as any).featured ? 0.8 : 0.7,
+    }));
+  } catch {
+    // fallback during build without DB
+  }
 
   return [...staticRoutes, ...services, ...blogPosts].map((route) => ({
     ...route,

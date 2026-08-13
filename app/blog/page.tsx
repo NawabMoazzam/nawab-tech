@@ -5,7 +5,7 @@ import { Navbar } from "@/components/navbar";
 import { BlogCard } from "@/components/blog/blog-card";
 import { BlogTopics } from "@/components/blog/blog-topics";
 import { FeaturedPost } from "@/components/blog/featured-post";
-import { getAllPosts, getFeaturedPosts } from "@/lib/blog/posts";
+import { getAllPublishedPosts } from "@/lib/blog/queries";
 
 export const metadata: Metadata = {
   title: "Insights & Resources",
@@ -16,9 +16,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogPage() {
-  const posts = getAllPosts();
-  const featuredPost = getFeaturedPosts()[0];
+export const revalidate = 3600; // ISR 1 hour - revalidate tag blog-posts
+
+export default async function BlogPage() {
+  const posts = await getAllPublishedPosts();
+  const featuredPost = posts.find((p: any) => p.featured) || posts[0];
 
   const latestPosts = posts.filter((post) => post.slug !== featuredPost?.slug);
 
