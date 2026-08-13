@@ -29,7 +29,11 @@ export default async function AdminLayout({
   // For now, don't redirect if we are on login - we detect via next-url header? fallback: if pathname contains /admin/login, skip
   const isLoginPage = pathname.includes("/admin/login");
 
-  if (!isLoginPage) {
+  // If we couldn't detect the pathname from headers, avoid redirect here
+  // to prevent a self-redirect loop when the login page is requested directly.
+  // The edge `proxy.ts` already protects `/admin` routes, so it's safe to skip
+  // the redirect when `pathname` is empty.
+  if (pathname && !isLoginPage) {
     try {
       const auth = await getAuth();
       const session = await auth.api.getSession({
@@ -40,14 +44,8 @@ export default async function AdminLayout({
         redirect("/admin/login");
       }
 
-      // Optional: enforce admin role
-      // If role exists and not admin, you might want to block
-      // const role = (session.user as any).role;
-      // if (role && role !== "admin") { redirect("/admin/login?error=forbidden") }
-
     } catch (e) {
-      // If auth fails, redirect unless login page
-      // During build, MONGODB_URI might not be set, so skip redirect in that case to allow build
+      // If auth fails, redirect only when we have DB configured (production-ish)
       if (process.env.MONGODB_URI) {
         redirect("/admin/login");
       }
