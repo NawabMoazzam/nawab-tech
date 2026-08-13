@@ -2,8 +2,9 @@ import {
   WithContext,
   LocalBusiness,
   BreadcrumbList,
-  ListItem,
+  Person,
   FAQPage,
+  ListItem,
 } from "schema-dts";
 import { siteConfig } from "./site";
 import { navLinks } from "@/lib/nav-links";
@@ -61,6 +62,23 @@ export const breadcrumbSchema: WithContext<BreadcrumbList> = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   itemListElement,
+};
+
+export const personSchema: WithContext<Person> = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Moazzam Nawab",
+  url: `${siteUrl}/about`,
+  image: `${siteUrl}/profile.jpg`,
+  sameAs: [
+    "https://www.facebook.com/moazzam.nawab.dev",
+    siteConfig.social.github,
+  ],
+  jobTitle: "Founder & Developer",
+  worksFor: {
+    "@type": "Organization",
+    name: "Nawab Tech",
+  },
 };
 
 export const faqSchema = (faqs: { question: string; answer: string }[]) =>

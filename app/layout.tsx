@@ -5,6 +5,7 @@ import { siteConfig } from "@/lib/site";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { breadcrumbSchema, localBusinessSchema } from "@/lib/schema-markup";
+import NextTopLoader from "nextjs-toploader";
 
 const siteUrl = siteConfig.url;
 
@@ -105,6 +106,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <NextTopLoader color={"var(--primary)"} showSpinner={false} />
           {children}
           <SpeedInsights />
           <Analytics />
