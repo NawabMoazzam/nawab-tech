@@ -19,7 +19,8 @@ export default async function AdminLayout({
   // In App Router, we can't get pathname easily in layout, so we do session check and allow if path is login via fallback in child.
 
   const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || headersList.get("x-invoked-path") || "";
+  const pathname =
+    headersList.get("x-pathname") || headersList.get("x-invoked-path") || "";
 
   // This check will run for all admin routes, but login page is public and won't call this? Actually it does.
   // So we check session, if no session -> if request is for login, allow, else redirect.
@@ -43,7 +44,6 @@ export default async function AdminLayout({
       if (!session?.user) {
         redirect("/admin/login");
       }
-
     } catch (e) {
       // If auth fails, redirect only when we have DB configured (production-ish)
       if (process.env.MONGODB_URI) {
@@ -58,7 +58,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-muted/20">
+    <div className="min-h-screen bg-background">
       <AdminSidebar>{children}</AdminSidebar>
     </div>
   );

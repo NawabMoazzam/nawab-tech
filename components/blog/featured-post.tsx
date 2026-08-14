@@ -14,7 +14,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
       className="group block border-x border-border"
     >
       <article className="grid lg:grid-cols-2">
-        <div className="relative min-h-[420px] overflow-hidden border-b border-border bg-primary p-6 text-primary-foreground sm:p-10 lg:min-h-[600px] lg:border-b-0 lg:border-r lg:p-14">
+        <div className="relative min-h-105 overflow-hidden border-b border-border bg-primary p-6 text-primary-foreground sm:p-10 lg:min-h-150 lg:border-b-0 lg:border-r lg:p-14">
           {/* Decorative editorial element */}
           <div className="absolute -right-24 -top-24 size-72 rounded-full border border-primary-foreground/20 transition-transform duration-700 group-hover:scale-125" />
 
@@ -26,7 +26,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
             </div>
 
             <div>
-              <div className="mb-6 flex items-center gap-3 text-xs uppercase tracking-[0.1em] text-primary-foreground/70">
+              <div className="mb-6 flex items-center gap-3 text-xs uppercase tracking-widest text-primary-foreground/70">
                 <span>{post.category.name}</span>
 
                 <span>•</span>
@@ -41,7 +41,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
           </div>
         </div>
 
-        <div className="flex min-h-[420px] flex-col justify-between p-6 sm:p-10 lg:min-h-[600px] lg:p-14">
+        <div className="flex min-h-105 flex-col justify-between p-6 sm:p-10 lg:min-h-150 lg:p-14">
           <div>
             <div className="eyebrow text-muted-foreground">
               Why this matters

@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { getFeaturedPost } from "@/lib/blog/queries";
 
-import { getAllPosts } from "@/lib/blog/posts";
-
-export function HomeInsights() {
-  const posts = getAllPosts().slice(0, 3);
+export async function HomeInsights() {
+  const posts = await getFeaturedPost();
 
   if (posts.length === 0) {
     return null;
@@ -28,10 +27,7 @@ export function HomeInsights() {
 
           <div className="border-t border-border lg:col-span-8 lg:border-l lg:border-t-0">
             {posts.map((post) => (
-              <article
-                key={post.slug}
-                className="group border-b border-border last:border-b-0"
-              >
+              <article key={post.slug} className="group border-b border-border">
                 <Link
                   href={`/blog/${post.slug}`}
                   className="block p-6 transition-colors hover:bg-muted/30 sm:p-10 lg:p-12"
@@ -41,7 +37,7 @@ export function HomeInsights() {
                       <div className="mb-4 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.08em] text-muted-foreground">
                         <span>{post.category.name}</span>
                         <span>·</span>
-                        <span>{post.readingTime}</span>
+                        <span>{post.readingTime} min read</span>
                       </div>
 
                       <h3 className="max-w-3xl text-2xl font-medium tracking-[-0.04em] sm:text-3xl">

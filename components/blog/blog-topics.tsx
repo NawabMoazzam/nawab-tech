@@ -45,7 +45,7 @@ export function BlogTopics() {
               <Link
                 key={topic.slug}
                 href={`/blog/category/${topic.slug}`}
-                className="group grid gap-5 border-b border-border p-6 transition-colors last:border-b-0 hover:bg-muted/40 sm:grid-cols-12 sm:p-10"
+                className="group grid gap-5 border-b border-border p-6 transition-colors hover:bg-muted/40 sm:grid-cols-12 sm:p-10"
               >
                 <span className="text-xs text-muted-foreground sm:col-span-1">
                   {String(index + 1).padStart(2, "0")}

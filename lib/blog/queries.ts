@@ -28,10 +28,10 @@ const fallbackPosts: BlogPostType[] = [
         "Learn what affects business website costs, what you should expect from a professional website, and how to choose the right solution for your business.",
     },
     coverImage: "",
-  } as any,
+  },
 ];
 
-function mapDbPostToType(dbPost: any): BlogPostType {
+function mapDbPostToType(dbPost: BlogPostType): BlogPostType {
   return {
     slug: dbPost.slug,
     title: dbPost.title,
@@ -39,8 +39,10 @@ function mapDbPostToType(dbPost: any): BlogPostType {
     category: dbPost.category,
     tags: dbPost.tags || [],
     author: dbPost.author || { name: "Nawab Tech", role: "Web Development" },
-    publishedAt: dbPost.publishedAt ? new Date(dbPost.publishedAt).toISOString().split("T")[0] : new Date(dbPost.createdAt).toISOString().split("T")[0],
-    updatedAt: dbPost.updatedAt ? new Date(dbPost.updatedAt).toISOString() : undefined,
+    publishedAt: new Date(dbPost.publishedAt).toISOString().split("T")[0],
+    updatedAt: dbPost.updatedAt
+      ? new Date(dbPost.updatedAt).toISOString()
+      : undefined,
     readingTime: dbPost.readingTime || 5,
     featured: dbPost.featured || false,
     coverImage: dbPost.coverImage || "",
@@ -50,14 +52,16 @@ function mapDbPostToType(dbPost: any): BlogPostType {
     content: dbPost.content,
     status: dbPost.status,
     _id: dbPost._id?.toString(),
-  } as any;
+  };
 }
 
 export async function getAllPublishedPosts(): Promise<BlogPostType[]> {
   try {
     if (!process.env.MONGODB_URI) return fallbackPosts;
     await connectDB();
-    const posts = await BlogPost.find({ status: "published" }).sort({ publishedAt: -1, createdAt: -1 }).lean();
+    const posts = await BlogPost.find({ status: "published" })
+      .sort({ publishedAt: -1, createdAt: -1 })
+      .lean();
     if (posts.length === 0) return fallbackPosts;
     return posts.map(mapDbPostToType);
   } catch (e) {
@@ -66,7 +70,32 @@ export async function getAllPublishedPosts(): Promise<BlogPostType[]> {
   }
 }
 
-export async function getAllPostsForAdmin(): Promise<any[]> {
+export async function getFeaturedPost(): Promise<BlogPostType[]> {
+  try {
+    if (!process.env.MONGODB_URI) return fallbackPosts.slice(0, 3);
+
+    await connectDB();
+    const featuredPosts = await BlogPost.find({
+      featured: true,
+      status: "published",
+    })
+      .sort({ publishedAt: -1 })
+      .lean();
+    if (featuredPosts.length === 0) {
+      const lastThreePosts = await BlogPost.find({ status: "published" })
+        .sort({ publishedAt: -1 })
+        .limit(3)
+        .lean();
+      return lastThreePosts.map(mapDbPostToType);
+    }
+    return featuredPosts.map(mapDbPostToType) || fallbackPosts.slice(0, 3);
+  } catch (e) {
+    console.warn("Failed to fetch featured posts from DB, using fallback:", e);
+    return fallbackPosts.slice(0, 3);
+  }
+}
+
+export async function getAllPostsForAdmin(): Promise<BlogPostType[]> {
   try {
     await connectDB();
     const posts = await BlogPost.find().sort({ createdAt: -1 }).lean();
@@ -99,10 +128,15 @@ export async function getPostBySlugWithContent(slug: string) {
   }
 }
 
-export async function getPostsByCategoryFromDB(categorySlug: string): Promise<BlogPostType[]> {
+export async function getPostsByCategoryFromDB(
+  categorySlug: string,
+): Promise<BlogPostType[]> {
   try {
     await connectDB();
-    const posts = await BlogPost.find({ "category.slug": categorySlug, status: "published" })
+    const posts = await BlogPost.find({
+      "category.slug": categorySlug,
+      status: "published",
+    })
       .sort({ publishedAt: -1 })
       .lean();
     return posts.map(mapDbPostToType);

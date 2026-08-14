@@ -7,11 +7,11 @@ export const metadata = {
 
 export default function AdminLoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+    <div className="h-full flex items-center justify-center bg-background">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight">Nawab Tech</h1>
-          <p className="text-muted-foreground mt-2 text-sm">Admin Panel</p>
+          <p className="text-muted-foreground text-sm">Admin Panel</p>
         </div>
         <LoginForm />
         <p className="mt-6 text-center text-xs text-muted-foreground">

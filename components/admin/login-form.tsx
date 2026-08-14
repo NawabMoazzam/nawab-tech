@@ -15,8 +15,6 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [name, setName] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,35 +22,23 @@ export function LoginForm() {
     setError("");
 
     try {
-      if (isSignUp) {
-        const res = await authClient.signUp.email({
-          email,
-          password,
-          name: name || email.split("@")[0],
-          callbackURL,
-        });
-        if (res.error) {
-          setError(res.error.message || "Sign up failed");
-          setLoading(false);
-          return;
-        }
-      } else {
-        const res = await authClient.signIn.email({
-          email,
-          password,
-          callbackURL,
-        });
-        // Better Auth returns { data, error }
-        if (res.error) {
-          setError(res.error.message || "Login failed. Check credentials.");
-          setLoading(false);
-          return;
-        }
+      const res = await authClient.signIn.email({
+        email,
+        password,
+        callbackURL,
+      });
+      // Better Auth returns { data, error }
+      if (res.error) {
+        setError(res.error.message || "Login failed. Check credentials.");
+        setLoading(false);
+        return;
       }
       router.push(callbackURL);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
       setLoading(false);
     }
   };
@@ -60,28 +46,13 @@ export function LoginForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">{isSignUp ? "Create Admin Account" : "Welcome back"}</CardTitle>
+        <CardTitle className="text-xl">Welcome back</CardTitle>
         <p className="text-sm text-muted-foreground">
-          {isSignUp
-            ? "First account will be admin. Use strong password."
-            : "Enter your credentials to access admin panel"}
+          Enter your credentials to access admin panel
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignUp && (
-            <div>
-              <label className="text-sm font-medium">Name</label>
-              <input
-                type="text"
-                required={isSignUp}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                placeholder="Nawab Moazzam"
-              />
-            </div>
-          )}
           <div>
             <label className="text-sm font-medium">Email</label>
             <input
@@ -113,23 +84,8 @@ export function LoginForm() {
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Please wait..." : isSignUp ? "Create Account" : "Sign In"}
+            {loading ? "Please wait..." : "Sign In"}
           </Button>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-xs text-muted-foreground hover:text-foreground underline"
-            >
-              {isSignUp ? "Already have account? Sign in" : "First time? Create admin account"}
-            </button>
-          </div>
-
-          <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
-            Better Auth + MongoDB. Session stored in httpOnly cookie.<br />
-            <span className="font-medium">Tip for Arena AI:</span> After first signup, set role to admin in DB manually or via seed script.
-          </p>
         </form>
       </CardContent>
     </Card>
