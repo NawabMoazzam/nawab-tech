@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Next.js 16: proxy.ts replaces middleware.ts
 // https://nextjs.org/docs/app/api-reference/file-conventions/proxy
 // This is the network boundary - only redirects/rewrites/headers.
-// Real security checks must ALSO be in Server Components (layout.tsx) due to CVE May 2026 bypass.
+// Real security checks also run in the protected admin dashboard layout.
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

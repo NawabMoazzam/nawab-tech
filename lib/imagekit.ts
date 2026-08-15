@@ -28,7 +28,7 @@ function getImageKitInstance() {
 export const imagekit = new Proxy({} as ImageKit, {
   get(_, prop) {
     const instance = getImageKitInstance();
-    const value = (instance as any)[prop];
+    const value = Reflect.get(instance, prop);
     if (typeof value === "function") {
       return value.bind(instance);
     }

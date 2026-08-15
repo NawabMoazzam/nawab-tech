@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getAllPublishedPosts } from "@/lib/blog/queries";
+import { getAllCategoriesFromDB } from "@/lib/categories";
 import { siteConfig } from "@/lib/site";
 
 const siteUrl = siteConfig.url;
@@ -46,17 +47,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   let blogPosts: { url: string; priority: number }[] = [];
+  let blogCategories: { url: string; priority: number }[] = [];
   try {
-    const posts = await getAllPublishedPosts();
+    const [posts, categories] = await Promise.all([
+      getAllPublishedPosts(),
+      getAllCategoriesFromDB(),
+    ]);
     blogPosts = posts.map((post) => ({
       url: `${siteConfig.url}/blog/${post.slug}`,
-      priority: (post as any).featured ? 0.8 : 0.7,
+      priority: post.featured ? 0.8 : 0.7,
+    }));
+    blogCategories = categories.map((category) => ({
+      url: `${siteConfig.url}/blog/category/${category.slug}`,
+      priority: 0.6,
     }));
   } catch {
-    // fallback during build without DB
+    // Keep static routes available during builds without a database.
   }
 
-  return [...staticRoutes, ...services, ...blogPosts].map((route) => ({
+  return [...staticRoutes, ...services, ...blogCategories, ...blogPosts].map((route) => ({
     ...route,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,

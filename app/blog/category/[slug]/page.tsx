@@ -3,44 +3,39 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { BlogCard } from "@/components/blog/blog-card";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
-import { BlogCard } from "@/components/blog/blog-card";
-import { getAllPublishedPosts, getPostsByCategoryFromDB } from "@/lib/blog/queries";
+import {
+  getAllCategoriesFromDB,
+  getCategoryBySlugFromDB,
+} from "@/lib/categories";
+import { getPostsByCategoryFromDB } from "@/lib/blog/queries";
 
 type CategoryPageProps = {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 };
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const posts = await getAllPublishedPosts();
-  const categories = new Set(posts.map((post) => post.category.slug));
-
-  return Array.from(categories).map((slug) => ({
-    slug,
-  }));
+  const categories = await getAllCategoriesFromDB();
+  return categories.map((category) => ({ slug: category.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
+  const category = await getCategoryBySlugFromDB(slug);
 
-  const posts = await getPostsByCategoryFromDB(slug);
-
-  if (!posts.length) {
-    return {};
-  }
-
-  const category = posts[0].category;
+  if (!category) return {};
 
   return {
     title: `${category.name} Insights | Nawab Tech`,
-    description: `Explore Nawab Tech insights and practical guides about ${category.name.toLowerCase()}.`,
+    description:
+      category.description ||
+      `Explore Nawab Tech insights and practical guides about ${category.name.toLowerCase()}.`,
     alternates: {
       canonical: `/blog/category/${category.slug}`,
     },
@@ -49,14 +44,12 @@ export async function generateMetadata({
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
+  const [category, posts] = await Promise.all([
+    getCategoryBySlugFromDB(slug),
+    getPostsByCategoryFromDB(slug),
+  ]);
 
-  const posts = await getPostsByCategoryFromDB(slug);
-
-  if (!posts.length) {
-    notFound();
-  }
-
-  const category = posts[0].category;
+  if (!category) notFound();
 
   return (
     <>
@@ -85,8 +78,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </h1>
 
               <p className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                Practical ideas and useful perspectives to help businesses make
-                better decisions about their digital products and systems.
+                {category.description ||
+                  "Practical ideas and useful perspectives to help businesses make better decisions about their digital products and systems."}
               </p>
             </div>
           </div>
@@ -101,9 +94,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 </div>
               </div>
 
-              {posts.map((post, index) => (
-                <BlogCard key={post.slug} post={post} index={index} />
-              ))}
+              {posts.length > 0 ? (
+                posts.map((post, index) => (
+                  <BlogCard key={post.slug} post={post} index={index} />
+                ))
+              ) : (
+                <div className="p-6 text-muted-foreground sm:p-10 lg:p-14">
+                  No published articles in this topic yet.
+                </div>
+              )}
             </div>
           </div>
         </section>

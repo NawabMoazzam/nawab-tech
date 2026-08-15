@@ -1,16 +1,31 @@
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+
 import { getAuth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { isMongoDuplicateKeyError } from "@/lib/errors";
+import { validatePostInput } from "@/lib/post-validation";
 import BlogPost from "@/models/blog-post";
+import Category from "@/models/category";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/admin/posts?status=draft|published&search=...
+async function getSession(request: NextRequest) {
+  const auth = await getAuth();
+  return auth.api.getSession({ headers: request.headers });
+}
+
+function slugConflictResponse() {
+  return NextResponse.json(
+    { error: "A post with that slug already exists." },
+    { status: 409 },
+  );
+}
+
+// GET /api/admin/posts?status=draft|published&search=...&featured=true
 export async function GET(request: NextRequest) {
   try {
-    const auth = await getAuth();
-    const session = await auth.api.getSession({ headers: request.headers });
+    const session = await getSession(request);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -19,19 +34,14 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
-    const search = searchParams.get("search");
+    const search = searchParams.get("search")?.trim();
     const featured = searchParams.get("featured");
+    const filter: Record<string, unknown> = {};
 
-    const filter: any = {};
-
-    if (status && status !== "all") {
+    if (status === "draft" || status === "published") {
       filter.status = status;
     }
-
-    if (featured === "true") {
-      filter.featured = true;
-    }
-
+    if (featured === "true") filter.featured = true;
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
@@ -40,66 +50,77 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const posts = await BlogPost.find(filter).sort({ createdAt: -1 }).lean();
+    const posts = await BlogPost.find(filter)
+      .populate("category", "name slug description")
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json({ posts });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Get posts error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load posts." },
+      { status: 500 },
+    );
   }
 }
 
-// POST /api/admin/posts - create new post
+// POST /api/admin/posts
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getAuth();
-    const session = await auth.api.getSession({ headers: request.headers });
+    const session = await getSession(request);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const parsed = validatePostInput(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+
     await connectDB();
 
-    const body = await request.json();
+    const [existingPost, category] = await Promise.all([
+      BlogPost.findOne({ slug: parsed.data.slug }).select("_id"),
+      Category.findById(parsed.data.category).select("_id"),
+    ]);
 
-    // Basic validation
-    if (!body.title || !body.slug || !body.excerpt || !body.content) {
+    if (existingPost) return slugConflictResponse();
+    if (!category) {
       return NextResponse.json(
-        { error: "Missing required fields: title, slug, excerpt, content" },
-        { status: 400 }
+        { error: "The selected category no longer exists." },
+        { status: 400 },
       );
     }
 
-    // Check duplicate slug
-    const existing = await BlogPost.findOne({ slug: body.slug });
-    if (existing) {
-      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
-    }
-
-    // Auto-generate category slug if needed
-    if (body.category && !body.category.slug) {
-      body.category.slug = body.category.name.toLowerCase().replace(/\s+/g, "-");
-    }
-
     const post = await BlogPost.create({
-      ...body,
-      author: body.author || {
-        name: (session.user as any).name || session.user.email?.split("@")[0] || "Nawab Tech",
+      ...parsed.data,
+      author: {
+        name:
+          session.user.name ||
+          session.user.email?.split("@")[0] ||
+          "Nawab Tech",
         role: "Editor",
       },
     });
+    await post.populate("category", "name slug description");
 
-    // Revalidate blog pages ISR
-    try {
-      revalidateTag("blog-posts", "max");
-      revalidateTag(`blog-${post.slug}`, "max");
-    } catch (e) {
-      console.warn("Revalidate failed:", e);
+    revalidatePath("/");
+    revalidatePath("/blog");
+    revalidatePath(`/blog/${post.slug}`);
+    const populatedCategory = post.category as unknown as { slug?: string };
+    if (populatedCategory?.slug) {
+      revalidatePath(`/blog/category/${populatedCategory.slug}`);
     }
 
     return NextResponse.json({ success: true, post }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (isMongoDuplicateKeyError(error)) return slugConflictResponse();
+
     console.error("Create post error:", error);
-    return NextResponse.json({ error: error.message || "Failed to create post" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create post." },
+      { status: 500 },
+    );
   }
 }

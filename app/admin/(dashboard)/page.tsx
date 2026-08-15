@@ -85,6 +85,9 @@ export default async function AdminDashboard() {
             <Link href="/admin/posts">
               <Button variant="outline">View All Posts</Button>
             </Link>
+            <Link href="/admin/categories">
+              <Button variant="outline">Manage Categories</Button>
+            </Link>
             <Link href="/blog" target="_blank">
               <Button variant="outline">View Blog</Button>
             </Link>

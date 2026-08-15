@@ -5,8 +5,10 @@ export type BlogPost = {
   excerpt: string;
 
   category: {
+    _id?: string;
     name: string;
     slug: string;
+    description?: string;
   };
 
   tags: string[];

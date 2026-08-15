@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@/lib/auth";
 import { imagekit } from "@/lib/imagekit";
+import { getErrorMessage } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -56,10 +57,10 @@ export async function POST(request: NextRequest) {
       width: uploadResponse.width,
       height: uploadResponse.height,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: error.message || "Upload failed" },
+      { error: getErrorMessage(error, "Upload failed") },
       { status: 500 }
     );
   }
@@ -86,10 +87,10 @@ export async function DELETE(request: NextRequest) {
     await imagekit.deleteFile(fileId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Delete error:", error);
     return NextResponse.json(
-      { error: error.message || "Delete failed" },
+      { error: getErrorMessage(error, "Delete failed") },
       { status: 500 }
     );
   }

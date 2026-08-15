@@ -1,133 +1,245 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
-import { Badge } from "../ui/badge";
+import { useEffect, useState } from "react";
 import {
-  LogOut,
-  LayoutDashboard,
-  FileText,
-  Plus,
-  Settings,
-  Image as ImageIcon,
   BadgeCheck,
+  FileText,
+  FolderTree,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Plus,
+  UserRound,
+  X,
 } from "lucide-react";
-import Image from "next/image";
-import { ThemeToggle } from "../theme-toggle";
+
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/posts", label: "Posts", icon: FileText },
   { href: "/admin/posts/new", label: "New Post", icon: Plus },
+  { href: "/admin/categories", label: "Categories", icon: FolderTree },
+  { href: "/admin/profile", label: "Profile", icon: UserRound },
 ];
 
-export function AdminSidebar({ children }: { children: React.ReactNode }) {
+type AdminUser = {
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  role: string;
+};
+
+function isNavItemActive(pathname: string, href: string) {
+  if (href === "/admin") return pathname === href;
+  if (href === "/admin/posts") {
+    return (
+      pathname === href ||
+      (pathname.startsWith("/admin/posts/") &&
+        pathname !== "/admin/posts/new")
+    );
+  }
+  if (href === "/admin/posts/new") return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function AdminSidebar({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: AdminUser;
+}) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = authClient.useSession();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDrawerOpen(false);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [drawerOpen]);
 
   const handleLogout = async () => {
+    setLoggingOut(true);
     await authClient.signOut();
-    router.push("/admin/login");
+    router.replace("/admin/login");
     router.refresh();
   };
 
-  return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      {session?.user && (
-        <aside className="w-64 border-r bg-background p-4 flex flex-col overflow-auto">
-          <div className="mb-8">
+  const sidebarContent = (
+    <>
+      <div className="mb-8 flex items-center justify-between gap-3">
+        <Link
+          href="/admin"
+          className="flex items-center gap-2 font-bold tracking-tight"
+          onClick={() => setDrawerOpen(false)}
+        >
+          <Image
+            src="/nawab-tech-logo.png"
+            alt="Nawab Tech"
+            width={40}
+            height={40}
+            priority
+          />
+          <span className="flex flex-col text-lg leading-tight">
+            Nawab Tech
+            <span className="text-xs font-normal text-muted-foreground">
+              Admin Panel
+            </span>
+          </span>
+        </Link>
+
+        <button
+          type="button"
+          className="inline-flex size-10 items-center justify-center rounded-md hover:bg-muted md:hidden"
+          aria-label="Close navigation"
+          onClick={() => setDrawerOpen(false)}
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      <nav className="flex-1 space-y-1" aria-label="Admin navigation">
+        {navItems.map((item) => {
+          const active = isNavItemActive(pathname, item.href);
+          const Icon = item.icon;
+
+          return (
             <Link
-              href="/admin"
-              className="font-bold text-xl tracking-tight flex items-center gap-2"
+              key={item.href}
+              href={item.href}
+              onClick={() => setDrawerOpen(false)}
+              aria-current={active ? "page" : undefined}
+              className={`flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
+              }`}
             >
-              <Image
-                src="/nawab-tech-logo.png"
-                alt="Nawab Tech"
-                width={40}
-                height={40}
-                priority
+              <Icon size={18} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="relative mt-8 space-y-4">
+        <Link
+          href="/admin/profile"
+          onClick={() => setDrawerOpen(false)}
+          className="block rounded-md bg-muted p-3 transition-colors hover:bg-muted/80"
+        >
+          <p className="truncate text-xs font-medium">{user.name}</p>
+          <p className="truncate text-[11px] text-muted-foreground">
+            {user.email}
+            {user.emailVerified ? (
+              <BadgeCheck
+                size={12}
+                className="ml-1 inline-block text-primary"
+                aria-label="Verified email"
               />
-              <div className="flex flex-col">
-                Nawab Tech
-                <span className="block text-xs font-normal text-muted-foreground">
-                  Admin Panel
-                </span>
-              </div>
-            </Link>
-          </div>
+            ) : null}
+          </p>
+          <Badge
+            variant="default"
+            className="absolute -top-2 right-2 px-1 py-0.5 text-[10px] capitalize"
+          >
+            {user.role}
+          </Badge>
+        </Link>
 
-          <nav className="flex-1 space-y-1">
-            {navItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/admin" && pathname.startsWith(item.href));
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  <Icon size={18} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="grow"
+            onClick={handleLogout}
+            disabled={loggingOut}
+          >
+            <LogOut size={16} className="mr-2" />
+            {loggingOut ? "Signing out…" : "Logout"}
+          </Button>
+          <ThemeToggle />
+        </div>
 
-          <div className="mt-auto space-y-4 relative">
-            <div className="rounded-md bg-muted p-3">
-              <p className="text-xs font-medium truncate">
-                {session?.user?.name || "Admin"}
-              </p>
-              <p className="text-[11px] text-muted-foreground truncate">
-                {session?.user?.email || "Admin"}
-                {session?.user?.emailVerified ? (
-                  <BadgeCheck
-                    size={12}
-                    className="inline-block ml-1 text-primary"
-                  />
-                ) : null}
-              </p>
-              <Badge
-                variant="default"
-                className="absolute -top-2 right-2 text-[10px] px-1 py-0.5"
-              >
-                {session?.user?.role || "Admin"}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="grow"
-                onClick={handleLogout}
-              >
-                <LogOut size={16} className="mr-2" />
-                Logout
-              </Button>
-              <ThemeToggle />
-            </div>
-            <Link
-              href="/"
-              className="block text-xs text-center text-muted-foreground hover:text-foreground"
-            >
-              ← Back to site
-            </Link>
-          </div>
-        </aside>
-      )}
+        <Link
+          href="/"
+          className="block text-center text-xs text-muted-foreground hover:text-foreground"
+        >
+          ← Back to site
+        </Link>
+      </div>
+    </>
+  );
 
-      {/* Main */}
-      <main className="flex-1 p-6 md:p-8 overflow-auto">{children}</main>
+  return (
+    <div className="min-h-dvh bg-background md:flex">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:hidden">
+        <Link href="/admin" className="flex items-center gap-2 font-semibold">
+          <Image
+            src="/nawab-tech-logo.png"
+            alt="Nawab Tech"
+            width={34}
+            height={34}
+            priority
+          />
+          <span>Admin</span>
+        </Link>
+        <button
+          type="button"
+          className="inline-flex size-11 items-center justify-center rounded-md border hover:bg-muted"
+          aria-label="Open navigation"
+          aria-expanded={drawerOpen}
+          aria-controls="admin-mobile-navigation"
+          onClick={() => setDrawerOpen(true)}
+        >
+          <Menu size={21} />
+        </button>
+      </header>
+
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col overflow-y-auto border-r bg-background p-4 md:flex">
+        {sidebarContent}
+      </aside>
+
+      {drawerOpen ? (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/55"
+            aria-label="Close navigation"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <aside
+            id="admin-mobile-navigation"
+            className="relative flex h-dvh w-[min(20rem,88vw)] flex-col overflow-y-auto border-r bg-background p-4 shadow-2xl"
+            aria-label="Mobile admin navigation"
+          >
+            {sidebarContent}
+          </aside>
+        </div>
+      ) : null}
+
+      <main className="min-w-0 flex-1 p-4 sm:p-6 md:h-dvh md:overflow-y-auto md:p-8">
+        {children}
+      </main>
     </div>
   );
 }

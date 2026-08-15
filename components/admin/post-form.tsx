@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ type PostFormData = {
   title: string;
   excerpt: string;
   content: string;
-  category: { name: string; slug: string };
+  category: string;
   tags: string[];
   coverImage: string;
   coverImageFileId: string;
@@ -31,7 +32,7 @@ const initialData: PostFormData = {
   title: "",
   excerpt: "",
   content: "# Hello World\n\nStart writing your post in markdown...",
-  category: { name: "Web Development", slug: "web-development" },
+  category: "",
   tags: [],
   coverImage: "",
   coverImageFileId: "",
@@ -47,20 +48,42 @@ function slugify(text: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
-export function PostForm({ initialPost }: { initialPost?: any }) {
+type CategoryOption = {
+  _id: string;
+  name: string;
+  slug: string;
+};
+
+type InitialPost = Partial<Omit<PostFormData, "category">> & {
+  category?: string | { _id?: string };
+};
+
+export function PostForm({
+  initialPost,
+  categories,
+}: {
+  initialPost?: InitialPost;
+  categories: CategoryOption[];
+}) {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const [form, setForm] = useState<PostFormData>(() => {
+    const initialCategory =
+      typeof initialPost?.category === "string"
+        ? initialPost.category
+        : initialPost?.category?._id || categories[0]?._id || "";
+
     if (initialPost) {
       return {
         ...initialData,
         ...initialPost,
         tags: initialPost.tags || [],
-        category: initialPost.category || initialData.category,
+        category: initialCategory,
         seo: initialPost.seo || initialData.seo,
       };
     }
-    return initialData;
+
+    return { ...initialData, category: initialCategory };
   });
   const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
@@ -77,8 +100,7 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent, publish = false) => {
-    e.preventDefault();
+  const handleSubmit = async (publish = false) => {
     setSaving(true);
     setError("");
 
@@ -111,19 +133,25 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
 
       router.push("/admin/posts");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (caught: unknown) {
+      setError(caught instanceof Error ? caught.message : "Failed to save post.");
       setSaving(false);
     }
   };
 
   return (
-    <form className="space-y-6" onSubmit={(e) => handleSubmit(e)}>
-      <div className="flex justify-between items-center">
+    <form
+      className="space-y-6"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit(false);
+      }}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">
           {isEditing ? "Edit Post" : "New Post"}
         </h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             variant="outline"
@@ -135,15 +163,14 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
           <Button
             type="submit"
             variant="secondary"
-            disabled={saving}
-            onClick={(e) => handleSubmit(e as any, false)}
+            disabled={saving || categories.length === 0}
           >
             {saving ? "Saving..." : "Save Draft"}
           </Button>
           <Button
             type="button"
-            onClick={(e) => handleSubmit(e as any, true)}
-            disabled={saving}
+            onClick={() => void handleSubmit(true)}
+            disabled={saving || categories.length === 0}
           >
             {saving ? "Publishing..." : "Publish"}
           </Button>
@@ -196,7 +223,11 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                     className="mt-1 w-full rounded-md border border-input px-3 py-2"
                     value={form.status}
                     onChange={(e) =>
-                      setForm({ ...form, status: e.target.value as any })
+                      setForm({
+                        ...form,
+                        status:
+                          e.target.value === "published" ? "published" : "draft",
+                      })
                     }
                   >
                     <option value="draft">Draft</option>
@@ -330,35 +361,50 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Category Name</label>
-                <input
-                  className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
-                  value={form.category.name}
+                <label htmlFor="post-category" className="text-sm font-medium">
+                  Category *
+                </label>
+                <select
+                  id="post-category"
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={form.category}
                   onChange={(e) =>
-                    setForm({
-                      ...form,
-                      category: { ...form.category, name: e.target.value },
-                    })
+                    setForm({ ...form, category: e.target.value })
                   }
-                  placeholder="Web Development"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Category Slug</label>
-                <input
-                  className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm font-mono"
-                  value={form.category.slug}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      category: {
-                        ...form.category,
-                        slug: slugify(e.target.value),
-                      },
-                    })
-                  }
-                  placeholder="web-development"
-                />
+                  required
+                  disabled={categories.length === 0}
+                >
+                  {categories.length === 0 ? (
+                    <option value="">No categories available</option>
+                  ) : (
+                    <>
+                      <option value="" disabled>
+                        Select a category
+                      </option>
+                      {categories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {categories.length === 0 ? (
+                    <>
+                      Create a category on the{" "}
+                      <Link
+                        href="/admin/categories"
+                        className="font-medium text-primary underline-offset-2 hover:underline"
+                      >
+                        categories page
+                      </Link>{" "}
+                      before saving this post.
+                    </>
+                  ) : (
+                    "Categories are managed separately so topics stay consistent."
+                  )}
+                </p>
               </div>
 
               <div>

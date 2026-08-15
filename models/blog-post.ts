@@ -23,11 +23,13 @@ const blogPostSchema = new Schema(
     },
     content: {
       type: String,
-      required: true, // Markdown content
+      required: true,
     },
     category: {
-      name: { type: String, required: true, trim: true },
-      slug: { type: String, required: true, lowercase: true, trim: true, index: true },
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+      index: true,
     },
     tags: {
       type: [String],
@@ -38,11 +40,11 @@ const blogPostSchema = new Schema(
       role: { type: String, default: "Web Development & Digital Products" },
     },
     coverImage: {
-      type: String, // ImageKit URL
+      type: String,
       default: "",
     },
     coverImageFileId: {
-      type: String, // ImageKit fileId for deletion
+      type: String,
       default: "",
     },
     status: {
@@ -75,28 +77,36 @@ const blogPostSchema = new Schema(
       index: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true },
 );
 
-// Auto-calculate reading time and set publishedAt if publishing first time
 blogPostSchema.pre("save", function () {
   if (this.isModified("content")) {
-    const words = (this as any).content.split(/\s+/).length;
-    (this as any).readingTime = Math.max(1, Math.ceil(words / 200));
+    const words = String(this.content || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length;
+    this.readingTime = Math.max(1, Math.ceil(words / 200));
   }
-  if (this.isModified("status") && (this as any).status === "published" && !(this as any).publishedAt) {
-    (this as any).publishedAt = new Date();
+
+  if (
+    this.isModified("status") &&
+    this.status === "published" &&
+    !this.publishedAt
+  ) {
+    this.publishedAt = new Date();
   }
-  // auto-generate seo if missing
-  if (!(this as any).seo?.title) {
-    (this as any).seo = (this as any).seo || ({} as any);
-    (this as any).seo.title = `${(this as any).title} | Nawab Tech`;
+
+  if (!this.seo) {
+    this.seo = { keywords: [], ogImage: "" };
   }
-  if (!(this as any).seo?.description) {
-    (this as any).seo = (this as any).seo || ({} as any);
-    (this as any).seo.description = (this as any).excerpt;
+
+  if (!this.seo.title) {
+    this.seo.title = `${this.title} | Nawab Tech`;
+  }
+
+  if (!this.seo.description) {
+    this.seo.description = this.excerpt;
   }
 });
 

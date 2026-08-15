@@ -1,38 +1,86 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { admin as adminPlugin } from "better-auth/plugins";
-import mongoose from "mongoose";
-import { connectDB } from "./db";
+import type { Db, MongoClient } from "mongodb";
 
-// Lazy get MongoDB raw db + client instance from existing mongoose cache
+import ResetPasswordEmail from "@/app/emails/reset-password";
+import { connectDB } from "@/lib/db";
+import { resend } from "@/lib/resend";
+
 async function getMongoDB() {
-  const conn = await connectDB();
-  const client = conn.connection.getClient();
-  const db = client.db(); // uses default DB from URI
-  return { db, client };
+  const connection = await connectDB();
+  const client = connection.connection.getClient();
+  return { db: client.db(), client };
 }
 
-// We need to create auth lazily because connectDB is async
+async function sendResetPassword({
+  user,
+  url,
+}: {
+  user: { email: string; name: string };
+  url: string;
+  token: string;
+}) {
+  const from = process.env.RESEND_FROM_EMAIL || process.env.FROM_EMAIL;
+
+  if (!process.env.RESEND_API_KEY || !from) {
+    throw new Error(
+      "Password reset email is not configured. Set RESEND_API_KEY and FROM_EMAIL (or RESEND_FROM_EMAIL).",
+    );
+  }
+
+  const { error } = await resend.emails.send({
+    from,
+    to: user.email,
+    subject: "Reset your Nawab Tech admin password",
+    react: ResetPasswordEmail({
+      name: user.name,
+      resetUrl: url,
+    }),
+  });
+
+  if (error) {
+    throw new Error(error.message || "Resend could not send the reset email.");
+  }
+}
+
 let authInstance: ReturnType<typeof betterAuth> | null = null;
 
 export async function getAuth() {
   if (authInstance) return authInstance;
 
-  // During build without DB, return a mock that won't be used at runtime
-  // Next.js still tries to collect page data for API routes
-  if (process.env.NEXT_PHASE === "phase-production-build" && !process.env.MONGODB_URI) {
-    console.warn("Build phase without MONGODB_URI - returning placeholder auth");
-    // Return minimal object that satisfies toNextJsHandler in build? 
-    // Actually toNextJsHandler needs real auth, but build collection for /api routes should not happen if dynamic=force-dynamic
-    // So we throw to skip? Let's create dummy adapter that won't connect
-    const dummyDb = { collection: () => ({ findOne: async () => null, insertOne: async () => null }) } as any;
-    const dummyClient = {} as any;
+  const baseURL =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.BETTER_AUTH_URL ||
+    "http://localhost:3000";
+
+  // Route modules are evaluated during production builds even when runtime
+  // infrastructure is unavailable. This adapter is never used for a request.
+  if (
+    process.env.NEXT_PHASE === "phase-production-build" &&
+    !process.env.MONGODB_URI
+  ) {
+    const dummyDb = {
+      collection: () => ({
+        findOne: async () => null,
+        insertOne: async () => null,
+      }),
+    } as unknown as Db;
+    const dummyClient = {} as unknown as MongoClient;
+
     authInstance = betterAuth({
       database: mongodbAdapter(dummyDb, { client: dummyClient }),
-      emailAndPassword: { enabled: true },
-      secret: process.env.BETTER_AUTH_SECRET || "build-placeholder-secret-must-be-32-chars-long",
-      baseURL: "http://localhost:3000",
+      emailAndPassword: {
+        enabled: true,
+        disableSignUp: true,
+        sendResetPassword,
+      },
+      secret:
+        process.env.BETTER_AUTH_SECRET ||
+        "build-placeholder-secret-must-be-32-chars-long",
+      baseURL,
     });
+
     return authInstance;
   }
 
@@ -43,18 +91,21 @@ export async function getAuth() {
   const { db, client } = await getMongoDB();
 
   authInstance = betterAuth({
-    database: mongodbAdapter(db, {
-      client,
-    }),
+    database: mongodbAdapter(db, { client }),
     emailAndPassword: {
       enabled: true,
+      disableSignUp: true,
       autoSignIn: true,
+      minPasswordLength: 8,
+      resetPasswordTokenExpiresIn: 60 * 60,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword,
     },
     secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: process.env.NEXT_PUBLIC_BASE_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    baseURL,
     session: {
-      expiresIn: 60 * 60 * 24 * 7, // 7 days
-      updateAge: 60 * 60 * 24, // 1 day
+      expiresIn: 60 * 60 * 24 * 7,
+      updateAge: 60 * 60 * 24,
       cookieCache: {
         enabled: true,
         maxAge: 5 * 60,
@@ -73,9 +124,7 @@ export async function getAuth() {
       "http://localhost:3000",
       "http://localhost:3001",
     ].filter(Boolean) as string[],
-    plugins: [
-      adminPlugin({}),
-    ],
+    plugins: [adminPlugin({})],
     user: {
       additionalFields: {
         role: {
@@ -91,5 +140,5 @@ export async function getAuth() {
   return authInstance;
 }
 
-// Placeholder export for backwards compat - use getAuth() instead
+// Kept for compatibility with modules that import the configured auth type.
 export const auth = {} as ReturnType<typeof betterAuth>;

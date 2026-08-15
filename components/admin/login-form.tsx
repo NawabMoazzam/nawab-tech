@@ -1,44 +1,44 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { authClient } from "@/lib/auth-client";
 
-export function LoginForm() {
+export function LoginForm({ callbackURL = "/admin" }: { callbackURL?: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackURL = searchParams.get("callbackURL") || "/admin";
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res = await authClient.signIn.email({
+      const result = await authClient.signIn.email({
         email,
         password,
         callbackURL,
       });
-      // Better Auth returns { data, error }
-      if (res.error) {
-        setError(res.error.message || "Login failed. Check credentials.");
-        setLoading(false);
-        return;
+
+      if (result.error) {
+        throw new Error(
+          result.error.message || "Sign in failed. Check your credentials.",
+        );
       }
-      router.push(callbackURL);
+
+      router.replace(callbackURL);
       router.refresh();
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Something went wrong.",
+      );
       setLoading(false);
     }
   };
@@ -48,43 +48,62 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle className="text-xl">Welcome back</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Enter your credentials to access admin panel
+          Enter your credentials to access the admin panel.
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Email</label>
+            <label htmlFor="login-email" className="text-sm font-medium">
+              Email
+            </label>
             <input
+              id="login-email"
               type="email"
+              autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(event) => setEmail(event.target.value)}
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               placeholder="admin@nawabtech.com"
             />
           </div>
           <div>
-            <label className="text-sm font-medium">Password</label>
+            <div className="flex items-center justify-between gap-3">
+              <label htmlFor="login-password" className="text-sm font-medium">
+                Password
+              </label>
+              <Link
+                href="/admin/login/forgot"
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <input
+              id="login-password"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               placeholder="••••••••"
               minLength={8}
             />
           </div>
 
-          {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {error ? (
+            <div
+              role="alert"
+              className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+            >
               {error}
             </div>
-          )}
+          ) : null}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Please wait..." : "Sign In"}
+            {loading ? "Signing in…" : "Sign in"}
           </Button>
         </form>
       </CardContent>

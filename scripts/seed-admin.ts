@@ -36,7 +36,9 @@ async function main() {
   );
 
   if (!result) {
-    console.error(`User with email ${email} not found in 'user' collection. Did you sign up at /admin/login first?`);
+    console.error(
+      `User with email ${email} not found in the Better Auth 'user' collection.`,
+    );
   } else {
     console.log(`✅ User ${email} is now admin:`, result);
   }

@@ -40,8 +40,8 @@ export function ImageKitUploader({ value, fileId, onChange, folder = "/nawab-tec
       }
 
       onChange(data.url, data.fileId);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (caught: unknown) {
+      setError(caught instanceof Error ? caught.message : "Upload failed");
     } finally {
       setUploading(false);
     }
