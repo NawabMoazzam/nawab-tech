@@ -15,6 +15,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import Image from "next/image";
+import { ThemeToggle } from "../theme-toggle";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -103,15 +104,18 @@ export function AdminSidebar({ children }: { children: React.ReactNode }) {
                 {session?.user?.role || "Admin"}
               </Badge>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={handleLogout}
-            >
-              <LogOut size={16} className="mr-2" />
-              Logout
-            </Button>
+            <div className="flex items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="grow"
+                onClick={handleLogout}
+              >
+                <LogOut size={16} className="mr-2" />
+                Logout
+              </Button>
+              <ThemeToggle />
+            </div>
             <Link
               href="/"
               className="block text-xs text-center text-muted-foreground hover:text-foreground"

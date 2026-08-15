@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageKitUploader } from "./imagekit-uploader";
+import { useTheme } from "next-themes";
 
 // MDEditor is client-only
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -48,6 +49,7 @@ function slugify(text: string) {
 
 export function PostForm({ initialPost }: { initialPost?: any }) {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
   const [form, setForm] = useState<PostFormData>(() => {
     if (initialPost) {
       return {
@@ -90,7 +92,9 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
     };
 
     try {
-      const url = isEditing ? `/api/admin/posts/${initialPost._id}` : "/api/admin/posts";
+      const url = isEditing
+        ? `/api/admin/posts/${initialPost._id}`
+        : "/api/admin/posts";
       const method = isEditing ? "PATCH" : "POST";
 
       const res = await fetch(url, {
@@ -116,26 +120,48 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
   return (
     <form className="space-y-6" onSubmit={(e) => handleSubmit(e)}>
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{isEditing ? "Edit Post" : "New Post"}</h1>
+        <h1 className="text-2xl font-bold">
+          {isEditing ? "Edit Post" : "New Post"}
+        </h1>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={() => router.push("/admin/posts")} disabled={saving}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/posts")}
+            disabled={saving}
+          >
             Cancel
           </Button>
-          <Button type="submit" variant="secondary" disabled={saving} onClick={(e) => handleSubmit(e as any, false)}>
+          <Button
+            type="submit"
+            variant="secondary"
+            disabled={saving}
+            onClick={(e) => handleSubmit(e as any, false)}
+          >
             {saving ? "Saving..." : "Save Draft"}
           </Button>
-          <Button type="button" onClick={(e) => handleSubmit(e as any, true)} disabled={saving}>
+          <Button
+            type="button"
+            onClick={(e) => handleSubmit(e as any, true)}
+            disabled={saving}
+          >
             {saving ? "Publishing..." : "Publish"}
           </Button>
         </div>
       </div>
 
-      {error && <div className="bg-destructive/10 text-destructive p-3 rounded text-sm">{error}</div>}
+      {error && (
+        <div className="bg-destructive/10 text-destructive p-3 rounded text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader><CardTitle>Content</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Content</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Title *</label>
@@ -154,18 +180,24 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                   <input
                     className="mt-1 w-full rounded-md border border-input px-3 py-2 font-mono text-sm"
                     value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })}
+                    onChange={(e) =>
+                      setForm({ ...form, slug: slugify(e.target.value) })
+                    }
                     required
                     placeholder="how-much-does-website-cost"
                   />
-                  <p className="text-[11px] text-muted-foreground mt-1">URL: /blog/{form.slug || "your-slug"}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    URL: /blog/{form.slug || "your-slug"}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Status</label>
                   <select
                     className="mt-1 w-full rounded-md border border-input px-3 py-2"
                     value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value as any })}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value as any })
+                    }
                   >
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
@@ -174,22 +206,30 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
               </div>
 
               <div>
-                <label className="text-sm font-medium">Excerpt * (max 300)</label>
+                <label className="text-sm font-medium">
+                  Excerpt * (max 300)
+                </label>
                 <textarea
                   className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
                   rows={3}
                   value={form.excerpt}
-                  onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, excerpt: e.target.value })
+                  }
                   required
                   maxLength={300}
                   placeholder="Short description for SEO and cards..."
                 />
-                <p className="text-[11px] text-muted-foreground text-right">{form.excerpt.length}/300</p>
+                <p className="text-[11px] text-muted-foreground text-right">
+                  {form.excerpt.length}/300
+                </p>
               </div>
 
               <div>
-                <label className="text-sm font-medium">Content (Markdown) *</label>
-                <div className="mt-2" data-color-mode="light">
+                <label className="text-sm font-medium">
+                  Content (Markdown) *
+                </label>
+                <div className="mt-2" data-color-mode={resolvedTheme}>
                   <MDEditor
                     value={form.content}
                     onChange={(v) => setForm({ ...form, content: v || "" })}
@@ -197,20 +237,29 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                     preview="edit"
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1">Supports GFM, code blocks, images via ![alt](url)</p>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Supports GFM, code blocks, images via ![alt](url)
+                </p>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>SEO</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>SEO</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium">SEO Title</label>
                 <input
                   className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
                   value={form.seo.title}
-                  onChange={(e) => setForm({ ...form, seo: { ...form.seo, title: e.target.value } })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      seo: { ...form.seo, title: e.target.value },
+                    })
+                  }
                   placeholder="Auto from title + | Nawab Tech"
                 />
               </div>
@@ -219,20 +268,33 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                 <textarea
                   className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
                   value={form.seo.description}
-                  onChange={(e) => setForm({ ...form, seo: { ...form.seo, description: e.target.value } })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      seo: { ...form.seo, description: e.target.value },
+                    })
+                  }
                   rows={2}
                   placeholder="Auto from excerpt"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Keywords (comma separated)</label>
+                <label className="text-sm font-medium">
+                  Keywords (comma separated)
+                </label>
                 <input
                   className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
                   value={form.seo.keywords.join(", ")}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      seo: { ...form.seo, keywords: e.target.value.split(",").map((k) => k.trim()).filter(Boolean) },
+                      seo: {
+                        ...form.seo,
+                        keywords: e.target.value
+                          .split(",")
+                          .map((k) => k.trim())
+                          .filter(Boolean),
+                      },
                     })
                   }
                   placeholder="web development, business website"
@@ -244,28 +306,40 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
 
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Cover Image (ImageKit)</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Cover Image (ImageKit)</CardTitle>
+            </CardHeader>
             <CardContent>
               <ImageKitUploader
                 value={form.coverImage}
                 fileId={form.coverImageFileId}
-                onChange={(url, fileId) => setForm({ ...form, coverImage: url, coverImageFileId: fileId })}
+                onChange={(url, fileId) =>
+                  setForm({
+                    ...form,
+                    coverImage: url,
+                    coverImageFileId: fileId,
+                  })
+                }
               />
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Complete Free: 20GB BW + 3GB storage. Auto WebP/AVIF on delivery.
-              </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Category & Tags</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Category & Tags</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Category Name</label>
                 <input
                   className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
                   value={form.category.name}
-                  onChange={(e) => setForm({ ...form, category: { ...form.category, name: e.target.value } })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      category: { ...form.category, name: e.target.value },
+                    })
+                  }
                   placeholder="Web Development"
                 />
               </div>
@@ -274,7 +348,15 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                 <input
                   className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm font-mono"
                   value={form.category.slug}
-                  onChange={(e) => setForm({ ...form, category: { ...form.category, slug: slugify(e.target.value) } })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      category: {
+                        ...form.category,
+                        slug: slugify(e.target.value),
+                      },
+                    })
+                  }
                   placeholder="web-development"
                 />
               </div>
@@ -290,8 +372,14 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        if (tagInput.trim() && !form.tags.includes(tagInput.trim())) {
-                          setForm({ ...form, tags: [...form.tags, tagInput.trim()] });
+                        if (
+                          tagInput.trim() &&
+                          !form.tags.includes(tagInput.trim())
+                        ) {
+                          setForm({
+                            ...form,
+                            tags: [...form.tags, tagInput.trim()],
+                          });
                           setTagInput("");
                         }
                       }
@@ -301,8 +389,14 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                     type="button"
                     size="sm"
                     onClick={() => {
-                      if (tagInput.trim() && !form.tags.includes(tagInput.trim())) {
-                        setForm({ ...form, tags: [...form.tags, tagInput.trim()] });
+                      if (
+                        tagInput.trim() &&
+                        !form.tags.includes(tagInput.trim())
+                      ) {
+                        setForm({
+                          ...form,
+                          tags: [...form.tags, tagInput.trim()],
+                        });
                         setTagInput("");
                       }
                     }}
@@ -312,11 +406,19 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {form.tags.map((tag) => (
-                    <span key={tag} className="text-xs bg-muted px-2 py-1 rounded-full flex items-center gap-1">
+                    <span
+                      key={tag}
+                      className="text-xs bg-muted px-2 py-1 rounded-full flex items-center gap-1"
+                    >
                       {tag}
                       <button
                         type="button"
-                        onClick={() => setForm({ ...form, tags: form.tags.filter((t) => t !== tag) })}
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            tags: form.tags.filter((t) => t !== tag),
+                          })
+                        }
                         className="ml-1 text-muted-foreground hover:text-foreground"
                       >
                         ×
@@ -330,7 +432,9 @@ export function PostForm({ initialPost }: { initialPost?: any }) {
                 <input
                   type="checkbox"
                   checked={form.featured}
-                  onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+                  onChange={(e) =>
+                    setForm({ ...form, featured: e.target.checked })
+                  }
                 />
                 Featured post (homepage highlight)
               </label>
