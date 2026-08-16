@@ -1,5 +1,6 @@
 import { FAQ } from "@/components/faq";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 
 export default function FAQPage() {
   return (
@@ -26,6 +27,7 @@ export default function FAQPage() {
         </div>
       </section>
       <FAQ />
+      <Footer />
     </>
   );
 }

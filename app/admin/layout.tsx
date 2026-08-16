@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Admin | Nawab Tech",
+  title: "Admin",
   robots: { index: false, follow: false },
 };
 

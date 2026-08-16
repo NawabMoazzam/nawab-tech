@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { siteConfig } from "@/lib/site";
 import { ArrowLeft } from "lucide-react";
 
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
-import { getAllPublishedPosts, getPostBySlugWithContent } from "@/lib/blog/queries";
+import {
+  getAllPublishedPosts,
+  getPostBySlugWithContent,
+} from "@/lib/blog/queries";
 import { ArticleContent } from "@/components/blog/article-content";
+import { Image } from "@imagekit/next";
+import { urlEndpoint } from "@/lib/imagekit";
+import { articleSchema } from "@/lib/schema-markup";
 
 type BlogPostPageProps = {
   params: Promise<{
@@ -45,8 +50,12 @@ export async function generateMetadata({
       type: "article",
       title: post.seo?.title || post.title,
       description: post.seo?.description || post.excerpt,
-      publishedTime: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
-      modifiedTime: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
+      publishedTime: post.publishedAt
+        ? new Date(post.publishedAt).toISOString()
+        : undefined,
+      modifiedTime: post.updatedAt
+        ? new Date(post.updatedAt).toISOString()
+        : undefined,
       authors: [post.author?.name || "Nawab Tech"],
       tags: post.tags,
       images: post.coverImage ? [post.coverImage] : undefined,
@@ -63,35 +72,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  const articleStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-
-    headline: post.title,
-
-    description: post.seo?.description || post.excerpt,
-
-    datePublished: post.publishedAt,
-
-    dateModified: post.updatedAt ?? post.publishedAt,
-
-    author: {
-      "@type": "Organization",
-      name: post.author?.name || "Nawab Tech",
-    },
-
-    publisher: {
-      "@type": "Organization",
-      name: siteConfig.name,
-    },
-
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${siteConfig.url}/blog/${post.slug}`,
-    },
-    image: post.coverImage || undefined,
-  };
-
   return (
     <>
       <Navbar />
@@ -101,7 +81,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify(articleStructuredData),
+              __html: JSON.stringify(articleSchema(post)),
             }}
           />
 
@@ -116,7 +96,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   Back to insights
                 </Link>
 
-                <div className="mt-16 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                <div className="mt-16 flex flex-wrap items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
                   <span>{post.category.name}</span>
 
                   <span>•</span>
@@ -135,7 +115,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
                   <span>•</span>
 
-                  <time dateTime={post.publishedAt ? new Date(post.publishedAt).toISOString() : ""}>
+                  <time
+                    dateTime={
+                      post.publishedAt
+                        ? new Date(post.publishedAt).toISOString()
+                        : ""
+                    }
+                  >
                     {post.publishedAt
                       ? new Intl.DateTimeFormat("en-GB", {
                           day: "numeric",
@@ -148,10 +134,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
                 {post.coverImage && (
                   <div className="mt-12">
-                    <img
+                    <Image
+                      urlEndpoint={urlEndpoint}
                       src={post.coverImage}
                       alt={post.title}
-                      className="w-full aspect-[16/9] object-cover rounded-lg border"
+                      width={1200}
+                      height={675}
+                      priority
+                      className="w-full aspect-video object-cover rounded-lg border"
                     />
                   </div>
                 )}

@@ -1,10 +1,10 @@
 import ImageKit from "imagekit";
 
-function getImageKitInstance() {
-  const publicKey = process.env.IMAGEKIT_PUBLIC_KEY || "";
-  const privateKey = process.env.IMAGEKIT_PRIVATE_KEY || "";
-  const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT || "";
+const publicKey = process.env.IMAGEKIT_PUBLIC_KEY || "";
+const privateKey = process.env.IMAGEKIT_PRIVATE_KEY || "";
+export const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT || "";
 
+function getImageKitInstance() {
   if (!publicKey || !privateKey || !urlEndpoint) {
     if (process.env.NEXT_PHASE === "phase-production-build") {
       // Return dummy instance during build
@@ -14,7 +14,9 @@ function getImageKitInstance() {
         urlEndpoint: "https://ik.imagekit.io/build_dummy",
       });
     }
-    console.warn("ImageKit env vars missing: IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, IMAGEKIT_URL_ENDPOINT");
+    console.warn(
+      "ImageKit env vars missing: IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, IMAGEKIT_URL_ENDPOINT",
+    );
   }
 
   return new ImageKit({

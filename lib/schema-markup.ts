@@ -5,9 +5,12 @@ import {
   Person,
   FAQPage,
   ListItem,
+  Article,
+  Organization,
 } from "schema-dts";
 import { siteConfig } from "./site";
 import { navLinks } from "@/lib/nav-links";
+import { BlogPost } from "./blog/types";
 
 const siteUrl = siteConfig.url;
 const phone = siteConfig.phone;
@@ -48,6 +51,15 @@ export const localBusinessSchema: WithContext<LocalBusiness> = {
     opens: "00:00",
     closes: "23:59",
   },
+  sameAs: [siteConfig.social.facebook, siteConfig.social.github],
+};
+
+export const organizationSchema: WithContext<Organization> = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: siteConfig.name,
+  url: siteUrl,
+  logo: `${siteUrl}/nawab-tech-logo.png`,
   sameAs: [siteConfig.social.facebook, siteConfig.social.github],
 };
 
@@ -94,3 +106,31 @@ export const faqSchema = (faqs: { question: string; answer: string }[]) =>
       },
     })),
   }) as WithContext<FAQPage>;
+
+export const articleSchema = (post: BlogPost) =>
+  ({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${siteConfig.url}/blog/${post.slug}`,
+    },
+    headline: post.title,
+    description: post.seo?.description || post.excerpt,
+    image: post.coverImage || "",
+    author: {
+      "@type": "Person",
+      name: post.author?.name || "Nawab Tech",
+      url: `${siteConfig.url}/about`,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteConfig.url}/nawab-tech-logo.png`,
+      },
+    },
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt ?? post.publishedAt,
+  }) as WithContext<Article>;
