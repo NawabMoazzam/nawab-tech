@@ -7,13 +7,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
+import { Eye, EyeOff } from "lucide-react";
 
-export function LoginForm({ callbackURL = "/admin" }: { callbackURL?: string }) {
+export function LoginForm({
+  callbackURL = "/admin",
+}: {
+  callbackURL?: string;
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -80,17 +86,31 @@ export function LoginForm({ callbackURL = "/admin" }: { callbackURL?: string }) 
                 Forgot password?
               </Link>
             </div>
-            <input
-              id="login-password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="••••••••"
-              minLength={8}
-            />
+            <div className="relative">
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="mt-1 w-full rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm"
+                placeholder="••••••••"
+                minLength={8}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                className="absolute bottom-1 right-1"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <Eye size={16} className="text-primary" />
+                ) : (
+                  <EyeOff size={16} />
+                )}
+              </Button>
+            </div>
           </div>
 
           {error ? (

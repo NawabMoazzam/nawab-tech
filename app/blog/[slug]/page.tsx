@@ -138,8 +138,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                       urlEndpoint={urlEndpoint}
                       src={post.coverImage}
                       alt={post.title}
-                      width={1200}
-                      height={675}
+                      width={1280}
+                      height={720}
                       priority
                       className="w-full aspect-video object-cover rounded-lg border"
                     />

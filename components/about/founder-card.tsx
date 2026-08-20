@@ -12,7 +12,7 @@ export function FounderCard() {
           __html: JSON.stringify(personSchema).replace(/</g, "\\u003c"),
         }}
       />
-      <section className="section-border">
+      <section id="founder" className="section-border">
         <div className="container-main">
           <div className="grid border-x border-border lg:grid-cols-2">
             {/* Visual */}

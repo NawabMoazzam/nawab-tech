@@ -17,6 +17,7 @@ export function ResetPasswordForm({
 }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(
     tokenError ? "This password reset link is invalid or has expired." : "",
@@ -100,12 +101,15 @@ export function ResetPasswordForm({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="new-reset-password" className="text-sm font-medium">
+              <label
+                htmlFor="new-reset-password"
+                className="text-sm font-medium"
+              >
                 New password
               </label>
               <input
                 id="new-reset-password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
                 minLength={8}
@@ -124,7 +128,7 @@ export function ResetPasswordForm({
               </label>
               <input
                 id="confirm-reset-password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
                 minLength={8}
@@ -133,6 +137,18 @@ export function ResetPasswordForm({
                 disabled={!token || Boolean(tokenError)}
                 className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <input
+                id="show-password"
+                type="checkbox"
+                checked={showPassword}
+                onChange={(event) => setShowPassword(event.target.checked)}
+                className="h-4 w-4 rounded border border-input bg-background accent-primary text-primary focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <label htmlFor="show-password" className="text-sm font-medium">
+                Show passwords
+              </label>
             </div>
 
             {error ? (

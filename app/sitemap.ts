@@ -65,9 +65,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Keep static routes available during builds without a database.
   }
 
-  return [...staticRoutes, ...services, ...blogCategories, ...blogPosts].map((route) => ({
-    ...route,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-  }));
+  return [...staticRoutes, ...services, ...blogCategories, ...blogPosts].map(
+    (route) => ({
+      ...route,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+    }),
+  );
 }

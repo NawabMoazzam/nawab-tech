@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, Loader2, Save, UserRound } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, Save, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ export function ProfileSettings() {
   const [nameError, setNameError] = useState("");
   const [nameSuccess, setNameSuccess] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -96,9 +97,7 @@ export function ProfileSettings() {
       );
     } catch (caught) {
       setPasswordError(
-        caught instanceof Error
-          ? caught.message
-          : "Failed to change password.",
+        caught instanceof Error ? caught.message : "Failed to change password.",
       );
     } finally {
       setSavingPassword(false);
@@ -200,7 +199,7 @@ export function ProfileSettings() {
               </label>
               <input
                 id="current-password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 value={currentPassword}
                 onChange={(event) => setCurrentPassword(event.target.value)}
@@ -215,7 +214,7 @@ export function ProfileSettings() {
                 </label>
                 <input
                   id="new-password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
@@ -233,7 +232,7 @@ export function ProfileSettings() {
                 </label>
                 <input
                   id="confirm-password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
@@ -258,14 +257,24 @@ export function ProfileSettings() {
               </p>
             ) : null}
 
-            <Button type="submit" disabled={savingPassword}>
-              {savingPassword ? (
-                <Loader2 size={16} className="mr-2 animate-spin" />
-              ) : (
-                <KeyRound size={16} className="mr-2" />
-              )}
-              {savingPassword ? "Changing…" : "Change password"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button type="submit" disabled={savingPassword}>
+                {savingPassword ? (
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                ) : (
+                  <KeyRound size={16} className="mr-2" />
+                )}
+                {savingPassword ? "Changing…" : "Change password"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <Eye size={16} /> : <EyeOff size={16} />} Show
+                Password
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
