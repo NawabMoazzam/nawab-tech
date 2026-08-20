@@ -210,7 +210,10 @@ export function TestimonialsManager({
               <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="testimonial-name" className="text-sm font-medium">
+                    <label
+                      htmlFor="testimonial-name"
+                      className="text-sm font-medium"
+                    >
                       Client name <span className="text-destructive">*</span>
                     </label>
                     <input
@@ -229,7 +232,10 @@ export function TestimonialsManager({
                     />
                   </div>
                   <div>
-                    <label htmlFor="testimonial-role" className="text-sm font-medium">
+                    <label
+                      htmlFor="testimonial-role"
+                      className="text-sm font-medium"
+                    >
                       Role or company
                     </label>
                     <input
@@ -250,7 +256,10 @@ export function TestimonialsManager({
 
                 <div>
                   <div className="flex items-center justify-between gap-4">
-                    <label htmlFor="testimonial-copy" className="text-sm font-medium">
+                    <label
+                      htmlFor="testimonial-copy"
+                      className="text-sm font-medium"
+                    >
                       Testimonial <span className="text-destructive">*</span>
                     </label>
                     <span className="text-[11px] text-muted-foreground">
@@ -275,11 +284,14 @@ export function TestimonialsManager({
                   />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 sm:items-end">
-                  <div>
-                    <label htmlFor="testimonial-order" className="text-sm font-medium">
-                      Display order
-                    </label>
+                <div>
+                  <label
+                    htmlFor="testimonial-order"
+                    className="text-sm font-medium"
+                  >
+                    Display order
+                  </label>
+                  <div className="flex gap-4 items-center justify-between">
                     <input
                       id="testimonial-order"
                       type="number"
@@ -293,26 +305,25 @@ export function TestimonialsManager({
                           order: Number(event.target.value),
                         }))
                       }
-                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                     />
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      Lower numbers appear first.
-                    </p>
+                    <label className="flex min-h-10 items-center gap-2 rounded-md border border-input px-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={form.published}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            published: event.target.checked,
+                          }))
+                        }
+                      />
+                      Show on homepage
+                    </label>
                   </div>
-
-                  <label className="flex min-h-10 items-center gap-2 rounded-md border border-input px-3 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={form.published}
-                      onChange={(event) =>
-                        setForm((current) => ({
-                          ...current,
-                          published: event.target.checked,
-                        }))
-                      }
-                    />
-                    Show on homepage
-                  </label>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Lower numbers appear first.
+                  </p>
                 </div>
               </div>
 
