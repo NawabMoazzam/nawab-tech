@@ -9,8 +9,11 @@ import { HomeInsights } from "@/components/home-insights";
 import { Navbar } from "@/components/navbar";
 import { Process } from "@/components/process";
 import { Services } from "@/components/services";
+import { Testimonials } from "@/components/testimonials";
 import { Transformation } from "@/components/transformation";
 import { WhyNawabTech } from "@/components/why-nawab-tech";
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Web Development & Digital Products",
@@ -33,6 +36,7 @@ export default function Home() {
         <Services />
         <Process />
         <WhyNawabTech />
+        <Testimonials />
         <FAQ />
         <HomeInsights />
         <ContactCTA />

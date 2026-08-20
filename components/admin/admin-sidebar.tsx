@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquareQuote,
   Plus,
   UserRound,
   X,
@@ -26,6 +27,11 @@ const navItems = [
   { href: "/admin/posts", label: "Posts", icon: FileText },
   { href: "/admin/posts/new", label: "New Post", icon: Plus },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
+  {
+    href: "/admin/testimonials",
+    label: "Testimonials",
+    icon: MessageSquareQuote,
+  },
   { href: "/admin/profile", label: "Profile", icon: UserRound },
 ];
 

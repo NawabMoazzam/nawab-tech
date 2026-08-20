@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@/lib/auth";
-import { imagekit } from "@/lib/imagekit";
+import { imagekit, isImageKitNotFoundError } from "@/lib/imagekit";
 import { getErrorMessage } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
@@ -88,10 +88,16 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
+    // A previously deleted file is already in the desired state. Treating it
+    // as success lets the form clear a stale file reference safely.
+    if (isImageKitNotFoundError(error)) {
+      return NextResponse.json({ success: true, alreadyDeleted: true });
+    }
+
     console.error("Delete error:", error);
     return NextResponse.json(
       { error: getErrorMessage(error, "Delete failed") },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

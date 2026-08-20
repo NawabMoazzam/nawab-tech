@@ -345,11 +345,11 @@ export function PostForm({
                 value={form.coverImage}
                 fileId={form.coverImageFileId}
                 onChange={(url, fileId) =>
-                  setForm({
-                    ...form,
+                  setForm((current) => ({
+                    ...current,
                     coverImage: url,
                     coverImageFileId: fileId,
-                  })
+                  }))
                 }
               />
             </CardContent>

@@ -38,6 +38,20 @@ export const imagekit = new Proxy({} as ImageKit, {
   },
 });
 
+export function isImageKitNotFoundError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+
+  const responseError = error as {
+    statusCode?: number;
+    $ResponseMetadata?: { statusCode?: number };
+  };
+
+  return (
+    responseError.statusCode === 404 ||
+    responseError.$ResponseMetadata?.statusCode === 404
+  );
+}
+
 // Helper to get authenticated params for client-side upload
 export function getImageKitAuthParams() {
   const instance = getImageKitInstance();

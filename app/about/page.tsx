@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { FounderCard } from "@/components/about/founder-card";
 import { HowWeWork } from "@/components/about/how-we-work";
+import { TechStack } from "@/components/about/tech-stack";
 import { WhatWeBuild } from "@/components/about/what-we-build";
 
 export const metadata: Metadata = {
@@ -100,6 +101,8 @@ export default function AboutPage() {
         <HowWeWork />
 
         <WhatWeBuild />
+
+        <TechStack />
 
         <FounderCard />
 
