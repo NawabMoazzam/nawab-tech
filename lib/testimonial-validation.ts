@@ -36,8 +36,9 @@ export function validateTestimonialInput(
   const name = text(value.name);
   const role = text(value.role);
   const testimonial = text(value.testimonial);
-  const avatar = text(value.avatar);
-  const avatarFileId = text(value.avatarFileId);
+  const requestedAvatar = text(value.avatar);
+  const avatar = requestedAvatar || "/avatar.svg";
+  const avatarFileId = avatar === "/avatar.svg" ? "" : text(value.avatarFileId);
   const requestedOrder = Number(value.order ?? 0);
 
   if (name.length < 2) {
@@ -67,10 +68,13 @@ export function validateTestimonialInput(
       error: "Testimonial must be 1,500 characters or fewer.",
     };
   }
-  if (!avatar || !avatarFileId || !isValidImageUrl(avatar)) {
+  if (
+    avatar !== "/avatar.svg" &&
+    (!avatarFileId || !isValidImageUrl(avatar))
+  ) {
     return {
       success: false,
-      error: "Upload a valid client avatar before saving.",
+      error: "The uploaded client avatar is invalid.",
     };
   }
   if (

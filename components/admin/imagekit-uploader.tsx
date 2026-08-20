@@ -5,6 +5,7 @@ import { useId, useRef, useState } from "react";
 import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Props = {
   value?: string;
@@ -13,6 +14,7 @@ type Props = {
   folder?: string;
   variant?: "cover" | "avatar";
   uploadLabel?: string;
+  fallbackPreview?: string;
 };
 
 type UploadResponse = {
@@ -36,11 +38,13 @@ export function ImageKitUploader({
   folder = "/nawab-tech/blog",
   variant = "cover",
   uploadLabel,
+  fallbackPreview,
 }: Props) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [error, setError] = useState("");
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,12 +80,11 @@ export function ImageKitUploader({
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Delete this image permanently from ImageKit?")) return;
-
     if (!fileId) {
       setError(
         "This image is missing its ImageKit file ID and cannot be safely replaced.",
       );
+      setDeleteDialogOpen(false);
       return;
     }
 
@@ -110,6 +113,7 @@ export function ImageKitUploader({
       );
     } finally {
       setDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -136,7 +140,7 @@ export function ImageKitUploader({
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => void handleDelete()}
+            onClick={() => setDeleteDialogOpen(true)}
             type="button"
             className="mt-3"
             disabled={deleting || uploading}
@@ -156,9 +160,25 @@ export function ImageKitUploader({
               isAvatar ? "aspect-square max-w-52 p-6" : "p-8"
             }`}
           >
-            <ImageIcon size={24} strokeWidth={1.5} />
+            {fallbackPreview ? (
+              <div className="relative size-24 overflow-hidden rounded-full border border-border bg-background">
+                <Image
+                  src={fallbackPreview}
+                  alt="Default avatar preview"
+                  fill
+                  sizes="96px"
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <ImageIcon size={24} strokeWidth={1.5} />
+            )}
             <p className="mt-2 text-sm">
-              {isAvatar ? "No avatar selected" : "No image selected"}
+              {fallbackPreview
+                ? "Using the default avatar"
+                : isAvatar
+                  ? "No avatar selected"
+                  : "No image selected"}
             </p>
           </div>
 
@@ -198,6 +218,16 @@ export function ImageKitUploader({
           {error}
         </p>
       ) : null}
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => void handleDelete()}
+        title={`Delete ${isAvatar ? "avatar" : "image"}?`}
+        description="This permanently removes the file from ImageKit. You cannot undo this action."
+        confirmLabel="Delete permanently"
+        busy={deleting}
+      />
     </div>
   );
 }

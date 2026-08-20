@@ -21,8 +21,8 @@ type TestimonialRecord = {
   name: string;
   role?: string | null;
   testimonial: string;
-  avatar: string;
-  avatarFileId: string;
+  avatar?: string | null;
+  avatarFileId?: string | null;
   published?: boolean;
   order?: number;
   createdAt?: Date | string | number;
@@ -37,8 +37,8 @@ export function toTestimonialDTO(value: unknown): TestimonialDTO {
     name: testimonial.name,
     role: testimonial.role || "",
     testimonial: testimonial.testimonial,
-    avatar: testimonial.avatar,
-    avatarFileId: testimonial.avatarFileId,
+    avatar: testimonial.avatar || "/avatar.svg",
+    avatarFileId: testimonial.avatarFileId || "",
     published: testimonial.published !== false,
     order: testimonial.order || 0,
     ...(testimonial.createdAt

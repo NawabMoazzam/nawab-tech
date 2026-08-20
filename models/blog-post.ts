@@ -42,10 +42,12 @@ const blogPostSchema = new Schema(
     coverImage: {
       type: String,
       default: "",
+      required: false,
     },
     coverImageFileId: {
       type: String,
       default: "",
+      required: false,
     },
     status: {
       type: String,

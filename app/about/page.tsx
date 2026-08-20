@@ -66,6 +66,8 @@ export default function AboutPage() {
           </div>
         </section>
 
+        <FounderCard />
+
         {/* Studio introduction */}
         <section className="section-border">
           <div className="container-main">
@@ -103,8 +105,6 @@ export default function AboutPage() {
         <WhatWeBuild />
 
         <TechStack />
-
-        <FounderCard />
 
         {/* Closing CTA */}
         <section className="section-border">

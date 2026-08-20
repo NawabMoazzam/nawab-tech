@@ -14,6 +14,7 @@ import {
 import { ImageKitUploader } from "@/components/admin/imagekit-uploader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Testimonial = {
   _id: string;
@@ -28,11 +29,13 @@ type Testimonial = {
 
 type TestimonialForm = Omit<Testimonial, "_id">;
 
+const DEFAULT_AVATAR = "/avatar.svg";
+
 const emptyForm: TestimonialForm = {
   name: "",
   role: "",
   testimonial: "",
-  avatar: "",
+  avatar: DEFAULT_AVATAR,
   avatarFileId: "",
   published: true,
   order: 0,
@@ -50,6 +53,7 @@ export function TestimonialsManager({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Testimonial | null>(null);
   const [error, setError] = useState(initialError);
   const [success, setSuccess] = useState("");
 
@@ -80,8 +84,8 @@ export function TestimonialsManager({
       name: testimonial.name,
       role: testimonial.role,
       testimonial: testimonial.testimonial,
-      avatar: testimonial.avatar,
-      avatarFileId: testimonial.avatarFileId,
+      avatar: testimonial.avatar || DEFAULT_AVATAR,
+      avatarFileId: testimonial.avatarFileId || "",
       published: testimonial.published,
       order: testimonial.order,
     });
@@ -131,14 +135,6 @@ export function TestimonialsManager({
   };
 
   const handleDelete = async (testimonial: Testimonial) => {
-    if (
-      !window.confirm(
-        `Delete ${testimonial.name}’s testimonial and its ImageKit avatar?`,
-      )
-    ) {
-      return;
-    }
-
     setDeletingId(testimonial._id);
     setError("");
     setSuccess("");
@@ -158,7 +154,7 @@ export function TestimonialsManager({
       setTestimonials((current) =>
         current.filter((item) => item._id !== testimonial._id),
       );
-      setSuccess("Testimonial and avatar deleted.");
+      setSuccess("Testimonial deleted.");
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -167,6 +163,7 @@ export function TestimonialsManager({
       );
     } finally {
       setDeletingId(null);
+      setPendingDelete(null);
     }
   };
 
@@ -195,7 +192,7 @@ export function TestimonialsManager({
               {editingId ? "Edit testimonial" : "Add testimonial"}
             </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
-              Add the client’s words, identity, and ImageKit avatar.
+              Add the client’s words and identity. A custom avatar is optional.
             </p>
           </div>
           {editingId ? (
@@ -329,17 +326,19 @@ export function TestimonialsManager({
 
               <div>
                 <p className="mb-2 text-sm font-medium">
-                  Client avatar <span className="text-destructive">*</span>
+                  Client avatar <span className="text-muted-foreground">(optional)</span>
                 </p>
                 <ImageKitUploader
-                  value={form.avatar}
+                  value={form.avatarFileId ? form.avatar : ""}
                   fileId={form.avatarFileId}
                   folder="/nawab-tech/testimonials"
                   variant="avatar"
+                  uploadLabel="Upload custom avatar"
+                  fallbackPreview={DEFAULT_AVATAR}
                   onChange={(avatar, avatarFileId) =>
                     setForm((current) => ({
                       ...current,
-                      avatar,
+                      avatar: avatar || DEFAULT_AVATAR,
                       avatarFileId,
                     }))
                   }
@@ -364,10 +363,7 @@ export function TestimonialsManager({
               </div>
             ) : null}
 
-            <Button
-              type="submit"
-              disabled={saving || !form.avatar || !form.avatarFileId}
-            >
+            <Button type="submit" disabled={saving}>
               {saving ? (
                 <Loader2 className="mr-2 animate-spin" />
               ) : editingId ? (
@@ -456,7 +452,7 @@ export function TestimonialsManager({
                       aria-label={`Delete ${item.name} testimonial`}
                       className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                       disabled={deletingId === item._id}
-                      onClick={() => void handleDelete(item)}
+                      onClick={() => setPendingDelete(item)}
                     >
                       {deletingId === item._id ? (
                         <Loader2 className="animate-spin" />
@@ -471,6 +467,22 @@ export function TestimonialsManager({
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        onConfirm={() => pendingDelete && void handleDelete(pendingDelete)}
+        title="Delete testimonial?"
+        description={
+          pendingDelete
+            ? `This will permanently delete ${pendingDelete.name}’s testimonial${
+                pendingDelete.avatarFileId ? " and its ImageKit avatar" : ""
+              }.`
+            : "This testimonial will be permanently deleted."
+        }
+        confirmLabel="Delete testimonial"
+        busy={Boolean(deletingId)}
+      />
     </div>
   );
 }

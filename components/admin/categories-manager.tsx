@@ -12,6 +12,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { slugify } from "@/lib/slugify";
 
 type Category = {
@@ -47,6 +48,7 @@ export function CategoriesManager({
   const [slugWasEdited, setSlugWasEdited] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
   const [error, setError] = useState(initialError);
   const [success, setSuccess] = useState("");
 
@@ -125,14 +127,6 @@ export function CategoriesManager({
   };
 
   const handleDelete = async (category: Category) => {
-    if (
-      !window.confirm(
-        `Delete “${category.name}”? This cannot be undone.`,
-      )
-    ) {
-      return;
-    }
-
     setDeletingId(category._id);
     setError("");
     setSuccess("");
@@ -160,6 +154,7 @@ export function CategoriesManager({
       );
     } finally {
       setDeletingId(null);
+      setPendingDelete(null);
     }
   };
 
@@ -353,7 +348,7 @@ export function CategoriesManager({
                     aria-label={`Delete ${category.name}`}
                     className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     disabled={deletingId === category._id}
-                    onClick={() => handleDelete(category)}
+                    onClick={() => setPendingDelete(category)}
                   >
                     {deletingId === category._id ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -367,6 +362,20 @@ export function CategoriesManager({
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        onConfirm={() => pendingDelete && void handleDelete(pendingDelete)}
+        title="Delete category?"
+        description={
+          pendingDelete
+            ? `“${pendingDelete.name}” will be permanently deleted. Categories used by posts cannot be deleted.`
+            : "This category will be permanently deleted."
+        }
+        confirmLabel="Delete category"
+        busy={Boolean(deletingId)}
+      />
     </div>
   );
 }

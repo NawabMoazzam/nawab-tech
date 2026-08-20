@@ -22,12 +22,12 @@ const testimonialSchema = new Schema(
     },
     avatar: {
       type: String,
-      required: true,
+      default: "/avatar.svg",
       trim: true,
     },
     avatarFileId: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
     published: {

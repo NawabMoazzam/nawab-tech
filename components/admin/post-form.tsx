@@ -338,7 +338,12 @@ export function PostForm({
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Cover Image (ImageKit)</CardTitle>
+              <CardTitle>
+                Cover Image <span className="font-normal text-muted-foreground">(optional)</span>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Posts can be saved and published without a cover image.
+              </p>
             </CardHeader>
             <CardContent>
               <ImageKitUploader
