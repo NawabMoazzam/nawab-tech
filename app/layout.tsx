@@ -10,6 +10,7 @@ import {
   organizationSchema,
 } from "@/lib/schema-markup";
 import NextTopLoader from "nextjs-toploader";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const siteUrl = siteConfig.url;
 
@@ -120,6 +121,7 @@ export default function RootLayout({
           {children}
           <SpeedInsights />
           <Analytics />
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
         </ThemeProvider>
       </body>
     </html>

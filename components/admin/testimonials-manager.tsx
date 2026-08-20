@@ -326,7 +326,8 @@ export function TestimonialsManager({
 
               <div>
                 <p className="mb-2 text-sm font-medium">
-                  Client avatar <span className="text-muted-foreground">(optional)</span>
+                  Client avatar{" "}
+                  <span className="text-muted-foreground">(optional)</span>
                 </p>
                 <ImageKitUploader
                   value={form.avatarFileId ? form.avatar : ""}
@@ -339,7 +340,7 @@ export function TestimonialsManager({
                     setForm((current) => ({
                       ...current,
                       avatar: avatar || DEFAULT_AVATAR,
-                      avatarFileId,
+                      avatarFileId: avatarFileId || "",
                     }))
                   }
                 />
