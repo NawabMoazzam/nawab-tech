@@ -13,6 +13,8 @@ import { ArticleContent } from "@/components/blog/article-content";
 import { Image } from "@imagekit/next";
 import { urlEndpoint } from "@/lib/imagekit";
 import { articleSchema } from "@/lib/schema-markup";
+import Script from "next/script";
+import AdsterraBanner from "@/components/AdsterraBanner";
 
 type BlogPostPageProps = {
   params: Promise<{
@@ -74,6 +76,24 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <>
+      {/* 1. Global config parameters */}
+      <Script id="adsterra-config" strategy="afterInteractive">
+        {`
+            window.atOptions = {
+              'key' : '30857032',
+              'format' : 'iframe',
+              'height' : 250,
+              'width' : 300,
+              'params' : {}
+            };
+          `}
+      </Script>
+
+      {/* 2. Source script invocation */}
+      <Script
+        src="https://recallscarce.com/1b/be/fc/1bbefc53739325cc426f5382741da6cb.js"
+        strategy="afterInteractive"
+      />
       <Navbar />
 
       <main>
@@ -152,9 +172,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <section className="section-border">
             <div className="container-main">
               <div className="border-x border-border">
+                <AdsterraBanner />
                 <div className="mx-auto max-w-3xl px-6 py-16 sm:px-10 sm:py-20 lg:py-24">
                   <ArticleContent content={post.content || ""} />
                 </div>
+                <AdsterraBanner />
               </div>
             </div>
           </section>

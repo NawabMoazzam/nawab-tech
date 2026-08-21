@@ -4,11 +4,7 @@ import "./globals.css";
 import { siteConfig } from "@/lib/site";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
-import {
-  breadcrumbSchema,
-  localBusinessSchema,
-  organizationSchema,
-} from "@/lib/schema-markup";
+import { localBusinessSchema, organizationSchema } from "@/lib/schema-markup";
 import NextTopLoader from "nextjs-toploader";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
@@ -102,12 +98,6 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c"),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c"),
           }}
         />
 

@@ -12,6 +12,7 @@ import { Services } from "@/components/services";
 import { Testimonials } from "@/components/testimonials";
 import { Transformation } from "@/components/transformation";
 import { WhyNawabTech } from "@/components/why-nawab-tech";
+import { breadcrumbSchema } from "@/lib/schema-markup";
 
 export const revalidate = 3600;
 
@@ -27,6 +28,12 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c"),
+        }}
+      />
       <Navbar />
 
       <main>
