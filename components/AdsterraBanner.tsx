@@ -33,7 +33,7 @@ export default function AdsterraBanner() {
     <div className="flex flex-1 items-center justify-center">
       <div
         ref={bannerRef}
-        className="flex justify-center items-center grow border-border border-2 my-4 min-h-22.5 max-h-22.5 min-w-182 max-w-182"
+        className="flex justify-center items-center border-border border-2 my-4 min-h-22.5 min-w-182"
         // Giving it a min-height reduces Cumulative Layout Shift (CLS)
       />
     </div>

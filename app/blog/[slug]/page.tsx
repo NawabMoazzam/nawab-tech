@@ -76,8 +76,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <>
-      {/* 1. Global config parameters */}
-      <Script id="adsterra-config" strategy="afterInteractive">
+      {/* <Script id="adsterra-config" strategy="afterInteractive">
         {`
             window.atOptions = {
               'key' : '30857032',
@@ -88,12 +87,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             };
           `}
       </Script>
-
-      {/* 2. Source script invocation */}
       <Script
         src="https://recallscarce.com/1b/be/fc/1bbefc53739325cc426f5382741da6cb.js"
         strategy="afterInteractive"
-      />
+      /> */}
       <Navbar />
 
       <main>
