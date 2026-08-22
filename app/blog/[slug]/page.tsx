@@ -13,7 +13,9 @@ import { ArticleContent } from "@/components/blog/article-content";
 import { Image } from "@imagekit/next";
 import { urlEndpoint } from "@/lib/imagekit";
 import { articleSchema } from "@/lib/schema-markup";
-import AdsterraBanner from "@/components/adsterra-ads/AdsterraBanner";
+import AdsterraBanner, {
+  AdsterraLeaderboard,
+} from "@/components/adsterra-ads/AdsterraBanner";
 import AdsterraSocialBar from "@/components/adsterra-ads/AdsterraSocialBar";
 
 type BlogPostPageProps = {
@@ -157,35 +159,27 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 {/* Responsive three-column layout: left ad | main content | right ads */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                   {/* Left sidebar - appears on large screens only */}
-                  <aside className="hidden lg:block lg:col-span-1 sticky top-24 min-w-40">
+                  <aside className="hidden lg:flex lg:col-span-1 sticky top-24 min-w-40 flex-col items-center">
                     <AdsterraBanner variant="160x600" />
                   </aside>
 
                   {/* Main content column */}
                   <main className="lg:col-span-3 mx-auto max-w-3xl px-6 py-16 sm:px-10 sm:py-20 lg:py-24">
-                    {/* Top banner — only one will render depending on viewport size and AdsterraBanner's checks */}
-                    <div className="mb-8">
-                      <div className="hidden lg:block">
-                        <AdsterraBanner variant="728x90" />
-                      </div>
-                      <div className="hidden md:block lg:hidden">
-                        <AdsterraBanner variant="468x60" />
-                      </div>
-                      <div className="block md:hidden">
-                        <AdsterraBanner variant="320x50" />
-                      </div>
+                    {/* Top leaderboard — responsive size, only one mounts */}
+                    <div className="mb-10 flex justify-center">
+                      <AdsterraLeaderboard />
                     </div>
 
                     <ArticleContent content={post.content || ""} />
 
-                    <div className="flex flex-wrap gap-6 mt-8">
+                    <div className="flex flex-wrap justify-center gap-6 mt-10">
                       <AdsterraBanner variant="300x250" />
                       <AdsterraBanner variant="300x250" />
                     </div>
                   </main>
 
                   {/* Right sidebar - appears on large screens only */}
-                  <aside className="hidden lg:block lg:col-span-1 sticky top-24 space-y-6 flex-col items-center min-w-40">
+                  <aside className="hidden lg:flex lg:col-span-1 sticky top-24 min-w-40 flex-col items-center gap-6">
                     <AdsterraBanner variant="160x300" />
                     <AdsterraBanner variant="160x300" />
                   </aside>
