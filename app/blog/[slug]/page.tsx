@@ -169,11 +169,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <section className="section-border">
             <div className="container-main">
               <div className="border-x border-border">
-                <AdsterraBanner />
+                <AdsterraBanner varient="728x90" />
                 <div className="mx-auto max-w-3xl px-6 py-16 sm:px-10 sm:py-20 lg:py-24">
                   <ArticleContent content={post.content || ""} />
                 </div>
-                <AdsterraBanner />
+                <AdsterraBanner varient="320x50" />
               </div>
             </div>
           </section>
