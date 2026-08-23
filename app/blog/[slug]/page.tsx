@@ -45,7 +45,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: post.seo?.title || `${post.title} | Nawab Tech`,
+    title: post.seo?.title || post.title,
     description: post.seo?.description || post.excerpt,
     alternates: {
       canonical: `/blog/${post.slug}`,
@@ -159,8 +159,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 {/* Responsive three-column layout: left ad | main content | right ads */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                   {/* Left sidebar - appears on large screens only */}
-                  <aside className="hidden lg:flex lg:col-span-1 sticky top-24 min-w-40 flex-col items-center">
+                  <aside className="hidden lg:flex lg:col-span-1 sticky top-24 min-w-40 flex-col items-center gap-6">
                     <AdsterraBanner variant="160x600" />
+                    <AdsterraBanner variant="160x300" />
                   </aside>
 
                   {/* Main content column */}
@@ -180,7 +181,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
                   {/* Right sidebar - appears on large screens only */}
                   <aside className="hidden lg:flex lg:col-span-1 sticky top-24 min-w-40 flex-col items-center gap-6">
-                    <AdsterraBanner variant="160x300" />
+                    <AdsterraBanner variant="160x600" />
                     <AdsterraBanner variant="160x300" />
                   </aside>
                 </div>

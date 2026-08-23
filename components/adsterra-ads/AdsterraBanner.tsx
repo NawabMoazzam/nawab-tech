@@ -6,12 +6,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
 export type AdsterraVariant =
-  | "728x90"
-  | "468x60"
-  | "320x50"
-  | "300x250"
-  | "160x600"
-  | "160x300";
+  "728x90" | "468x60" | "320x50" | "300x250" | "160x600" | "160x300";
 
 interface VariantConfig {
   key: string;
@@ -23,9 +18,21 @@ export const ADSTERRA_VARIANTS: Record<AdsterraVariant, VariantConfig> = {
   "728x90": { key: "3cb2c8de3ed9777942fc30fbceaed4af", width: 728, height: 90 },
   "468x60": { key: "a1eff0f11ef55bc709b1a33c11d5b677", width: 468, height: 60 },
   "320x50": { key: "3e908e7430b24d70c2fbd03f4e65d4b4", width: 320, height: 50 },
-  "300x250": { key: "a09f0b2fe9b273e745882b0935d13d8f", width: 300, height: 250 },
-  "160x600": { key: "3127a3424d48784e8f9fa492f83e0610", width: 160, height: 600 },
-  "160x300": { key: "4f5c230a6adb8702352ff6ea043d14e3", width: 160, height: 300 },
+  "300x250": {
+    key: "a09f0b2fe9b273e745882b0935d13d8f",
+    width: 300,
+    height: 250,
+  },
+  "160x600": {
+    key: "3127a3424d48784e8f9fa492f83e0610",
+    width: 160,
+    height: 600,
+  },
+  "160x300": {
+    key: "4f5c230a6adb8702352ff6ea043d14e3",
+    width: 160,
+    height: 300,
+  },
 };
 
 type AtOptions = {
@@ -36,8 +43,7 @@ type AtOptions = {
   params: Record<string, unknown>;
 };
 
-type AtOptionsWindow = Window &
-  typeof globalThis & { atOptions?: AtOptions };
+type AtOptionsWindow = Window & typeof globalThis & { atOptions?: AtOptions };
 
 /* -------------------------------------------------------------------------- */
 /*  Ad loader                                                                 */
@@ -252,6 +258,7 @@ export function AdsterraLeaderboard({
 
   return (
     <AdsterraBanner
+      key={variant}
       variant={variant}
       className={className}
       showLabel={showLabel}

@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
+import { VercelInsights } from "@/components/vercel-insights";
 import { localBusinessSchema, organizationSchema } from "@/lib/schema-markup";
 import NextTopLoader from "nextjs-toploader";
 import { GoogleAnalytics } from "@next/third-parties/google";
@@ -108,9 +107,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <NextTopLoader color={"var(--primary)"} showSpinner={false} />
+          <VercelInsights />
           {children}
-          <SpeedInsights />
-          <Analytics />
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
         </ThemeProvider>
       </body>

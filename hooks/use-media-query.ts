@@ -1,29 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+const noop = () => {};
+
+function subscribeMediaQuery(query: string, callback: () => void): () => void {
+  if (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
+    return noop;
+  }
+  const mql = window.matchMedia(query);
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
+
+function getMediaQuerySnapshot(query: string): boolean {
+  if (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
+    return false;
+  }
+  return window.matchMedia(query).matches;
+}
 
 /**
  * SSR-safe media query hook.
  *
- * Always returns `false` during the initial (server + first client) render so
- * the markup matches between server and client, then updates to the real value
- * inside an effect — guaranteeing no React hydration mismatch.
+ * Returns `false` during server rendering and the initial hydration render
+ * (so server and client markup always match), then resolves to the real value
+ * once the client has hydrated.
+ *
+ * Built on `useSyncExternalStore`: the server value is never painted — React
+ * re-renders with the real value before the browser paints, so there is no
+ * flash of the wrong value and no wasted work.
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return;
-    }
-
-    const mql = window.matchMedia(query);
-    const update = () => setMatches(mql.matches);
-    update();
-
-    mql.addEventListener("change", update);
-    return () => mql.removeEventListener("change", update);
-  }, [query]);
-
-  return matches;
+  return useSyncExternalStore(
+    (callback) => subscribeMediaQuery(query, callback),
+    () => getMediaQuerySnapshot(query),
+    () => false,
+  );
 }
