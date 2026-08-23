@@ -7,6 +7,8 @@ import { BlogTopics } from "@/components/blog/blog-topics";
 import { FeaturedPost } from "@/components/blog/featured-post";
 import { getAllPublishedPosts } from "@/lib/blog/queries";
 import type { BlogPost } from "@/lib/blog/types";
+import { AdsterraLeaderboard } from "@/components/adsterra-ads/AdsterraBanner";
+import AdsterraSocialBar from "@/components/adsterra-ads/AdsterraSocialBar";
 
 export const metadata: Metadata = {
   title: "Insights & Resources",
@@ -89,6 +91,9 @@ export default async function BlogPage() {
                     More insights are on the way.
                   </div>
                 )}
+                <div className="p-6 flex justify-center">
+                  <AdsterraLeaderboard />
+                </div>
               </div>
             </div>
           </div>
@@ -130,6 +135,7 @@ export default async function BlogPage() {
       </main>
 
       <Footer />
+      <AdsterraSocialBar />
     </>
   );
 }
