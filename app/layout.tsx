@@ -53,6 +53,7 @@ export const metadata: Metadata = {
     title: "Nawab Tech — Web Development & Custom Software",
     description:
       "High-performing websites, custom web applications, dashboards, and digital systems built around your business.",
+    images: `${siteUrl}/nawab-tech-banner.png`,
   },
 
   twitter: {
@@ -60,6 +61,7 @@ export const metadata: Metadata = {
     title: "Nawab Tech — Web Development & Custom Software",
     description:
       "High-performing websites, custom web applications, dashboards, and digital systems built around your business.",
+    images: `${siteUrl}/nawab-tech-banner.png`,
   },
 
   robots: {
