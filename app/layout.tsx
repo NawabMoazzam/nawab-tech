@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 
   description: siteConfig.description,
 
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Nawab Tech — Web Development & Digital Products",
+    // startUpImage: [],
+  },
+
   keywords: [
     "web development services",
     "custom web development",

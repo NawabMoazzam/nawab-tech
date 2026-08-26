@@ -1,0 +1,28 @@
+{
+  "theme_color": "#ce4d2d",
+  "background_color": "#f5f3ef",
+  "icons": [
+    {
+      "purpose": "maskable",
+      "sizes": "512x512",
+      "src": "icon512_maskable.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "icon512_rounded.png",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "any",
+  "display": "standalone",
+  "dir": "auto",
+  "lang": "en-GB",
+  "name": "Admin Panel",
+  "short_name": "Admin",
+  "scope": "/admin",
+  "start_url": "/admin",
+  "description": "High-performing websites, custom web applications, dashboards, and digital systems built around your business.",
+  "id": "/admin"
+}
