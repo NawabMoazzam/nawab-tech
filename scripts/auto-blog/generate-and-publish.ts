@@ -47,7 +47,7 @@ const BASE_URL =
 const REVALIDATE_SECRET = process.env.BLOG_REVALIDATE_SECRET;
 const DRY_RUN = process.env.DRY_RUN === "true";
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
 function requireEnv() {
   const missing: string[] = [];
@@ -86,7 +86,8 @@ const CATEGORIES = [
   {
     name: "Dashboard Development",
     slug: "dashboard-development",
-    description: "Dashboards, internal tools, and data visibility for businesses.",
+    description:
+      "Dashboards, internal tools, and data visibility for businesses.",
   },
   {
     name: "Automation & Integrations",
@@ -114,7 +115,9 @@ async function fetchWithRetry(
     try {
       const res = await fetch(url, init);
       if (res.ok) return res;
-      lastError = new Error(`Request failed (${res.status}): ${await res.text()}`);
+      lastError = new Error(
+        `Request failed (${res.status}): ${await res.text()}`,
+      );
     } catch (error) {
       lastError = error;
     }
@@ -272,7 +275,9 @@ async function main() {
 
   console.log("[auto-blog] Asking Gemini for a new article...");
   const generated = await generatePostWithGemini(recentTitles);
-  console.log(`[auto-blog] Got topic: "${generated.title}" (${generated.category})`);
+  console.log(
+    `[auto-blog] Got topic: "${generated.title}" (${generated.category})`,
+  );
 
   const baseSlug = slugify(generated.title);
   const slug = await ensureUniqueSlug(posts, baseSlug);
@@ -331,7 +336,13 @@ async function main() {
 
   if (DRY_RUN) {
     console.log("[auto-blog] DRY_RUN is on - not writing to MongoDB.");
-    console.log(JSON.stringify({ ...doc, content: `${doc.content.slice(0, 200)}...` }, null, 2));
+    console.log(
+      JSON.stringify(
+        { ...doc, content: `${doc.content.slice(0, 200)}...` },
+        null,
+        2,
+      ),
+    );
   } else {
     await posts.insertOne(doc);
     console.log(`[auto-blog] Published: /blog/${slug}`);
