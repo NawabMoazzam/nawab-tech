@@ -28,9 +28,10 @@ A script + GitHub Actions workflow can publish one AI-written blog post with
 an AI-generated cover image every day, for free:
 
 - `scripts/auto-blog/generate-and-publish.ts` - generates a post with the
-  Gemini API (free tier), generates a cover image with Pollinations.ai (free,
-  no key), uploads it to ImageKit, and inserts the post directly into
-  MongoDB with `status: "published"`.
+  Gemini API (free tier), picks a matching cover photo from the Pexels API
+  (free stock photo library, just needs a free API key), uploads it to
+  ImageKit, and inserts the post directly into MongoDB with
+  `status: "published"`.
 - `.github/workflows/daily-blog.yml` - runs that script once a day on
   GitHub Actions' free scheduler.
 - `app/api/revalidate` - a secret-protected endpoint the script pings after
@@ -54,6 +55,7 @@ the app), plus:
 
 ```bash
 GEMINI_API_KEY=            # https://aistudio.google.com/apikey (free)
+PEXELS_API_KEY=            # https://www.pexels.com/api/ (free, no card)
 BLOG_REVALIDATE_SECRET=    # any random string; must match the value on Vercel
 ```
 
@@ -63,6 +65,7 @@ secrets** (Settings → Secrets and variables → Actions):
 ```
 MONGODB_URI
 GEMINI_API_KEY
+PEXELS_API_KEY
 IMAGEKIT_PUBLIC_KEY
 IMAGEKIT_PRIVATE_KEY
 IMAGEKIT_URL_ENDPOINT

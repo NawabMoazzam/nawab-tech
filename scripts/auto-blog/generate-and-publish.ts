@@ -3,9 +3,10 @@
  *
  * What this does, end to end:
  *   1. Asks Google Gemini (free tier) for a brand-new blog post: title,
- *      excerpt, full markdown content, tags, category, and an image prompt.
- *   2. Asks Pollinations.ai (free, no API key) to generate a cover image
- *      from that prompt.
+ *      excerpt, full markdown content, tags, category, and a short
+ *      stock-photo search phrase for the cover image.
+ *   2. Asks the Pexels API (genuinely free, just needs a free API key) for
+ *      a relevant, high-quality photo using that search phrase.
  *   3. Uploads the cover image to ImageKit (the same media host the admin
  *      panel already uses).
  *   4. Inserts the finished post directly into MongoDB with
@@ -20,12 +21,19 @@
  * Required environment variables (see .env.example / README):
  *   MONGODB_URI
  *   GEMINI_API_KEY
+ *   PEXELS_API_KEY
  *   IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, IMAGEKIT_URL_ENDPOINT
  *
  * Optional:
  *   NEXT_PUBLIC_BASE_URL / BETTER_AUTH_URL - used to call /api/revalidate
  *   BLOG_REVALIDATE_SECRET - shared secret for /api/revalidate
  *   DRY_RUN=true - do everything except writing to MongoDB (safe test run)
+ *
+ * Note on image providers: Pollinations.ai's old "no key needed" free image
+ * endpoint was retired in favor of a paid credit system, so it is no longer
+ * a reliable free option. Pexels is used instead - it is a real stock photo
+ * library, free forever with just a free sign-up (no credit card), and much
+ * more reliable for unattended daily automation.
  */
 
 import * as dotenv from "dotenv";
@@ -39,6 +47,7 @@ import { slugify } from "../../lib/slugify";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 const IMAGEKIT_PUBLIC_KEY = process.env.IMAGEKIT_PUBLIC_KEY;
 const IMAGEKIT_PRIVATE_KEY = process.env.IMAGEKIT_PRIVATE_KEY;
 const IMAGEKIT_URL_ENDPOINT = process.env.IMAGEKIT_URL_ENDPOINT;
@@ -53,6 +62,7 @@ function requireEnv() {
   const missing: string[] = [];
   if (!MONGODB_URI) missing.push("MONGODB_URI");
   if (!GEMINI_API_KEY) missing.push("GEMINI_API_KEY");
+  if (!PEXELS_API_KEY) missing.push("PEXELS_API_KEY");
   if (!IMAGEKIT_PUBLIC_KEY) missing.push("IMAGEKIT_PUBLIC_KEY");
   if (!IMAGEKIT_PRIVATE_KEY) missing.push("IMAGEKIT_PRIVATE_KEY");
   if (!IMAGEKIT_URL_ENDPOINT) missing.push("IMAGEKIT_URL_ENDPOINT");
@@ -86,8 +96,7 @@ const CATEGORIES = [
   {
     name: "Dashboard Development",
     slug: "dashboard-development",
-    description:
-      "Dashboards, internal tools, and data visibility for businesses.",
+    description: "Dashboards, internal tools, and data visibility for businesses.",
   },
   {
     name: "Automation & Integrations",
@@ -102,7 +111,7 @@ type GeneratedPost = {
   content: string;
   tags: string[];
   category: string;
-  imagePrompt: string;
+  imageSearchQuery: string;
 };
 
 async function fetchWithRetry(
@@ -115,9 +124,7 @@ async function fetchWithRetry(
     try {
       const res = await fetch(url, init);
       if (res.ok) return res;
-      lastError = new Error(
-        `Request failed (${res.status}): ${await res.text()}`,
-      );
+      lastError = new Error(`Request failed (${res.status}): ${await res.text()}`);
     } catch (error) {
       lastError = error;
     }
@@ -147,9 +154,10 @@ Rules:
   bullet lists where useful). Length: 700-1100 words.
 - excerpt: 1-2 sentences, max 280 characters, no markdown.
 - tags: 3-6 short lowercase tags.
-- imagePrompt: a vivid, concrete visual description (no text/words in the
-  image) for a blog cover image related to the article topic. Modern, clean,
-  professional tech illustration style.`;
+- imageSearchQuery: a short (2-4 word) stock-photo search phrase in English
+  for a real photo that fits this article's topic (e.g. "team laptop
+  meeting", "server room technology", "designer sketching wireframes").
+  Keep it generic enough that a stock photo library will have good matches.`;
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -164,7 +172,7 @@ Rules:
           content: { type: "string" },
           tags: { type: "array", items: { type: "string" } },
           category: { type: "string", enum: categoryNames },
-          imagePrompt: { type: "string" },
+          imageSearchQuery: { type: "string" },
         },
         required: [
           "title",
@@ -172,7 +180,7 @@ Rules:
           "content",
           "tags",
           "category",
-          "imagePrompt",
+          "imageSearchQuery",
         ],
       },
     },
@@ -200,12 +208,48 @@ Rules:
   return parsed;
 }
 
-async function generateCoverImage(prompt: string): Promise<Buffer> {
-  const seed = Math.floor(Math.random() * 1_000_000);
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(
-    prompt,
-  )}?width=1200&height=630&nologo=true&seed=${seed}`;
+type PexelsPhoto = {
+  src: {
+    large2x?: string;
+    large?: string;
+    original?: string;
+  };
+};
 
+async function findCoverImageUrl(searchQuery: string): Promise<string> {
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(
+    searchQuery,
+  )}&orientation=landscape&per_page=10`;
+
+  const res = await fetchWithRetry(url, {
+    method: "GET",
+    headers: { Authorization: PEXELS_API_KEY as string },
+  });
+
+  const json = (await res.json()) as { photos?: PexelsPhoto[] };
+  const photos = json.photos || [];
+
+  if (!photos.length) {
+    // Fall back to a generic, always-populated query rather than failing
+    // the whole run over one oddly specific search phrase.
+    const fallbackRes = await fetchWithRetry(
+      `https://api.pexels.com/v1/search?query=technology%20office&orientation=landscape&per_page=10`,
+      { method: "GET", headers: { Authorization: PEXELS_API_KEY as string } },
+    );
+    const fallbackJson = (await fallbackRes.json()) as { photos?: PexelsPhoto[] };
+    const fallbackPhotos = fallbackJson.photos || [];
+    if (!fallbackPhotos.length) {
+      throw new Error("Pexels returned no photos, even for the fallback query.");
+    }
+    const pick = fallbackPhotos[Math.floor(Math.random() * fallbackPhotos.length)];
+    return (pick.src.large2x || pick.src.large || pick.src.original) as string;
+  }
+
+  const pick = photos[Math.floor(Math.random() * photos.length)];
+  return (pick.src.large2x || pick.src.large || pick.src.original) as string;
+}
+
+async function downloadImage(url: string): Promise<Buffer> {
   const res = await fetchWithRetry(url, { method: "GET" }, 4);
   const arrayBuffer = await res.arrayBuffer();
   return Buffer.from(arrayBuffer);
@@ -275,15 +319,14 @@ async function main() {
 
   console.log("[auto-blog] Asking Gemini for a new article...");
   const generated = await generatePostWithGemini(recentTitles);
-  console.log(
-    `[auto-blog] Got topic: "${generated.title}" (${generated.category})`,
-  );
+  console.log(`[auto-blog] Got topic: "${generated.title}" (${generated.category})`);
 
   const baseSlug = slugify(generated.title);
   const slug = await ensureUniqueSlug(posts, baseSlug);
 
-  console.log("[auto-blog] Generating cover image via Pollinations...");
-  const imageBuffer = await generateCoverImage(generated.imagePrompt);
+  console.log(`[auto-blog] Finding a cover photo on Pexels ("${generated.imageSearchQuery}")...`);
+  const pexelsUrl = await findCoverImageUrl(generated.imageSearchQuery);
+  const imageBuffer = await downloadImage(pexelsUrl);
 
   console.log("[auto-blog] Uploading cover image to ImageKit...");
   const imagekit = new ImageKit({
@@ -336,13 +379,7 @@ async function main() {
 
   if (DRY_RUN) {
     console.log("[auto-blog] DRY_RUN is on - not writing to MongoDB.");
-    console.log(
-      JSON.stringify(
-        { ...doc, content: `${doc.content.slice(0, 200)}...` },
-        null,
-        2,
-      ),
-    );
+    console.log(JSON.stringify({ ...doc, content: `${doc.content.slice(0, 200)}...` }, null, 2));
   } else {
     await posts.insertOne(doc);
     console.log(`[auto-blog] Published: /blog/${slug}`);
