@@ -1,4 +1,4 @@
-name: Daily auto blog post - run ${{ github.run_number }}
+name: Daily auto blog post
 
 on:
   schedule:
