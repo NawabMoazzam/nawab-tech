@@ -56,7 +56,7 @@ const BASE_URL =
 const REVALIDATE_SECRET = process.env.BLOG_REVALIDATE_SECRET;
 const DRY_RUN = process.env.DRY_RUN === "true";
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
 function requireEnv() {
   const missing: string[] = [];
