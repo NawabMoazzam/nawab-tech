@@ -12,7 +12,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="relative z-50 border-b border-border bg-background">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/80 backdrop-blur-xl transition-colors">
       <div className="container-main">
         <nav className="flex h-20 items-center justify-between px-6 sm:px-0">
           {/* Brand */}
@@ -36,7 +36,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 {link.label}
               </Link>
@@ -48,7 +48,7 @@ export function Navbar() {
 
             <Link
               href="/contact"
-              className="bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
+              className="nav-cta bg-foreground px-5 py-3 text-sm font-medium text-background transition-all hover:-translate-y-0.5 hover:shadow-lg"
             >
               Start a project
             </Link>

@@ -4,7 +4,6 @@ import {
   Bot,
   Globe2,
   Layers3,
-  Workflow,
 } from "lucide-react";
 
 const services = [
@@ -99,6 +98,8 @@ export function Services() {
             return (
               <article
                 key={service.number}
+                data-reveal-item
+                style={{ transitionDelay: `${index * 70}ms` }}
                 className="group grid border-b border-border last:border-b-0 lg:grid-cols-12"
               >
                 {/* Number */}
@@ -139,7 +140,7 @@ export function Services() {
                 </div>
 
                 {/* Visual */}
-                <div className="relative flex min-h-72 items-center justify-center overflow-hidden border-t border-border bg-muted/30 p-8 lg:col-span-4 lg:min-h-0 lg:border-l lg:border-t-0">
+                <div className="service-visual relative flex min-h-72 items-center justify-center overflow-hidden border-t border-border bg-muted/30 p-8 lg:col-span-4 lg:min-h-0 lg:border-l lg:border-t-0">
                   <ServiceVisual index={index} />
 
                   <a

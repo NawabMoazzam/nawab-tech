@@ -64,12 +64,14 @@ export function Process() {
 
         {/* Steps */}
         <div className="grid border-x border-t border-border md:grid-cols-2 lg:grid-cols-4">
-          {steps.map((step) => {
+          {steps.map((step, index) => {
             const Icon = step.icon;
 
             return (
               <article
                 key={step.number}
+                data-reveal-item
+                style={{ transitionDelay: `${index * 70}ms` }}
                 className="group relative flex min-h-107.5 flex-col justify-between border-b border-border p-6 sm:p-10 md:border-r md:last:border-r-0 lg:min-h-125 lg:border-b-0"
               >
                 {/* Number + Icon */}

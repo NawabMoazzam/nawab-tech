@@ -56,7 +56,7 @@ export function TechStack() {
               return (
                 <article
                   key={group.number}
-                  className={`p-6 sm:p-10 ${
+                  className={`group p-6 sm:p-10 ${
                     index % 2 === 1 ? "sm:border-l" : ""
                   } ${index > 1 ? "border-t" : index === 1 ? "border-t sm:border-t-0" : ""} border-border`}
                 >
