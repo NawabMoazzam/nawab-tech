@@ -48,7 +48,7 @@ export function Navbar() {
 
             <Link
               href="/contact"
-              className="bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
+              className="nav-cta bg-foreground px-5 py-3 text-sm font-medium text-background transition-all hover:-translate-y-0.5 hover:shadow-lg"
             >
               Start a project
             </Link>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ScrollAnimations } from "@/components/scroll-animations";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
 import { VercelInsights } from "@/components/vercel-insights";
@@ -118,6 +119,7 @@ export default function RootLayout({
         >
           <NextTopLoader color={"var(--primary)"} showSpinner={false} />
           <VercelInsights />
+          <ScrollAnimations />
           {children}
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
         </ThemeProvider>
