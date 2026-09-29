@@ -98,6 +98,8 @@ export function Services() {
             return (
               <article
                 key={service.number}
+                data-reveal-item
+                style={{ transitionDelay: `${index * 70}ms` }}
                 className="group grid border-b border-border last:border-b-0 lg:grid-cols-12"
               >
                 {/* Number */}

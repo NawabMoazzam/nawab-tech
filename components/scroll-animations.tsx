@@ -20,11 +20,13 @@ export function ScrollAnimations() {
     );
     const observed = new WeakSet<Element>();
     const observeSections = () => {
-      document.querySelectorAll<HTMLElement>("main section").forEach((section) => {
-        if (observed.has(section)) return;
-        observed.add(section);
-        observer.observe(section);
-      });
+      document
+        .querySelectorAll<HTMLElement>("main section, main [data-reveal-item]")
+        .forEach((element) => {
+          if (observed.has(element)) return;
+          observed.add(element);
+          observer.observe(element);
+        });
     };
     const mutations = new MutationObserver(observeSections);
 

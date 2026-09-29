@@ -48,7 +48,7 @@ export function Hero() {
                 <br />
                 built around
                 <br />
-                <span className="text-primary">your business.</span>
+                <span className="accent-gradient">your business.</span>
               </h1>
             </div>
 
@@ -94,6 +94,8 @@ export function Hero() {
               <div className="absolute left-1/2 top-[18%] h-[64%] w-px -translate-x-1/2 bg-border" />
 
               <div className="absolute left-[14%] right-[14%] top-1/2 h-px -translate-y-1/2 bg-border" />
+              <span aria-hidden="true" className="signal-dot signal-dot-horizontal" />
+              <span aria-hidden="true" className="signal-dot signal-dot-vertical" />
 
               {/* Center System */}
               <div className="system-core relative z-10 flex size-32 flex-col items-center justify-center border border-foreground bg-background sm:size-40">

@@ -36,7 +36,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 {link.label}
               </Link>

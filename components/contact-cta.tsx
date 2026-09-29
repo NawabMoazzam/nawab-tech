@@ -8,7 +8,7 @@ export function ContactCTA() {
         <div className="border-x border-border">
           <div className="grid lg:grid-cols-12">
             {/* Main CTA */}
-            <div className="p-6 sm:p-10 lg:col-span-8 lg:p-20">
+            <div className="contact-main p-6 sm:p-10 lg:col-span-8 lg:p-20">
               <div className="eyebrow flex items-center gap-3 text-muted-foreground">
                 Have a project in mind?
               </div>
@@ -18,7 +18,7 @@ export function ContactCTA() {
                 <br />
                 you&apos;re trying
                 <br />
-                to <span className="text-primary">build.</span>
+                to <span className="accent-gradient">build.</span>
               </h2>
 
               <p className="mt-10 max-w-xl text-lg leading-relaxed text-muted-foreground">
