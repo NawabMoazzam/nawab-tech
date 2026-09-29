@@ -21,7 +21,9 @@ export function ScrollAnimations() {
     const observed = new WeakSet<Element>();
     const observeSections = () => {
       document
-        .querySelectorAll<HTMLElement>("main section, main [data-reveal-item]")
+        .querySelectorAll<HTMLElement>(
+          "main section, main article, main a.group, main [data-reveal-item]",
+        )
         .forEach((element) => {
           if (observed.has(element)) return;
           observed.add(element);
@@ -29,14 +31,38 @@ export function ScrollAnimations() {
         });
     };
     const mutations = new MutationObserver(observeSections);
+    let activeSection: HTMLElement | null = null;
+    let pointerX = 0;
+    let pointerY = 0;
+    let frame = 0;
+
+    const updateSpotlight = (event: PointerEvent) => {
+      if (!(event.target instanceof Element)) return;
+      activeSection = event.target.closest<HTMLElement>("main section");
+      if (!activeSection || event.pointerType === "touch") return;
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      if (frame) return;
+
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        if (!activeSection) return;
+        const bounds = activeSection.getBoundingClientRect();
+        activeSection.style.setProperty("--spotlight-x", `${pointerX - bounds.left}px`);
+        activeSection.style.setProperty("--spotlight-y", `${pointerY - bounds.top}px`);
+      });
+    };
 
     document.documentElement.classList.add("motion-ready");
     observeSections();
     mutations.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("pointermove", updateSpotlight, { passive: true });
 
     return () => {
       mutations.disconnect();
       observer.disconnect();
+      window.removeEventListener("pointermove", updateSpotlight);
+      if (frame) window.cancelAnimationFrame(frame);
       document.documentElement.classList.remove("motion-ready");
     };
   }, []);
