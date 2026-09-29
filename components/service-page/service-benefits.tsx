@@ -21,7 +21,7 @@ export function ServiceBenefits({ benefits }: ServiceBenefitsProps) {
             return (
               <article
                 key={benefit.title}
-                className="border-b border-border p-6 sm:p-10 md:border-r md:last:border-r-0 lg:border-b-0"
+                className="group border-b border-border p-6 sm:p-10 md:border-r md:last:border-r-0 lg:border-b-0"
               >
                 <Icon size={24} strokeWidth={1.4} />
 

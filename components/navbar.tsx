@@ -12,7 +12,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="relative z-50 border-b border-border bg-background">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/80 backdrop-blur-xl transition-colors">
       <div className="container-main">
         <nav className="flex h-20 items-center justify-between px-6 sm:px-0">
           {/* Brand */}
