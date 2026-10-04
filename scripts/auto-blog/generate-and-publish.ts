@@ -11,8 +11,9 @@
  *   2. Validates that the model actually completed its job (HTTP status,
  *      finishReason, valid JSON, word count, heading hierarchy, internal links,
  *      non-duplicate topic, and SEO metadata constraints). If a model fails,
- *      times out, hits quota/rate limits, or produces sub-par/incomplete output,
- *      automatically falls back to the next model in the chain.
+ *      times out, hits quota/rate limits, rejects this key for its token type
+ *      (401), or produces sub-par/incomplete output, the chain advances to the
+ *      next model. A models.list preflight checks the sanitized key first.
  *   3. Queries the Pexels API for a relevant, high-quality landscape photo.
  *   4. Uploads the cover image to ImageKit.
  *   5. Inserts the finished post directly into MongoDB with
@@ -46,8 +47,16 @@ dotenv.config({ path: ".env" });
 
 import { slugify } from "../../lib/slugify";
 
+function sanitizeGeminiApiKey(value: string | undefined): string | undefined {
+  let key = value?.trim() ?? "";
+  key = key.replace(/^['"]|['"]$/g, "").trim();
+  key = key.replace(/^Bearer\s+/i, "").trim();
+  key = key.replace(/^['"]|['"]$/g, "").trim();
+  return key || undefined;
+}
+
 const MONGODB_URI = process.env.MONGODB_URI;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = sanitizeGeminiApiKey(process.env.GEMINI_API_KEY);
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 const IMAGEKIT_PUBLIC_KEY = process.env.IMAGEKIT_PUBLIC_KEY;
 const IMAGEKIT_PRIVATE_KEY = process.env.IMAGEKIT_PRIVATE_KEY;
@@ -65,6 +74,9 @@ type GeminiModelSpec = {
   maxAttempts: number;
   timeoutMs: number;
 };
+
+const GEMINI_CHAIN_BUDGET_MS = 8 * 60 * 1000;
+const GEMINI_PREFLIGHT_TIMEOUT_MS = 15_000;
 
 /**
  * Default Gemini fallback chain ordered by capability for long-form B2B SEO
@@ -250,6 +262,49 @@ function requireEnv() {
   }
 }
 
+async function preflightGeminiApiKey(): Promise<void> {
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY is missing or empty after sanitising.");
+  }
+
+  const res = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models",
+    {
+      method: "GET",
+      headers: { "x-goog-api-key": GEMINI_API_KEY },
+      signal: AbortSignal.timeout(GEMINI_PREFLIGHT_TIMEOUT_MS),
+    },
+  );
+  const responseText = await res.text();
+
+  if (!res.ok) {
+    throw new Error(
+      `Gemini models.list preflight failed (HTTP ${res.status}): ${responseText.slice(0, 500)}. Check that GEMINI_API_KEY is a valid Google AI Studio key with Gemini API access.`,
+    );
+  }
+
+  let response: unknown;
+  try {
+    response = JSON.parse(responseText) as unknown;
+  } catch {
+    throw new Error("Gemini models.list preflight returned invalid JSON.");
+  }
+
+  const models =
+    response !== null && typeof response === "object" && "models" in response
+      ? (response as { models?: unknown }).models
+      : undefined;
+  if (!Array.isArray(models) || models.length === 0) {
+    throw new Error(
+      "Gemini models.list preflight succeeded but returned no models. Check the key's project and Gemini API access.",
+    );
+  }
+
+  console.log(
+    `[auto-blog] Gemini API-key preflight passed (models.list returned ${models.length} models).`,
+  );
+}
+
 // Categories the site already understands (matches app/services/* and the
 // contact form's service enum). The AI picks one of these per post.
 const CATEGORIES = [
@@ -314,13 +369,6 @@ type GeneratedPost = {
   seoKeywords: string[];
   modelUsed: string;
 };
-
-class FatalGeminiAuthError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "FatalGeminiAuthError";
-  }
-}
 
 class NonRetryableModelError extends Error {
   constructor(message: string) {
@@ -676,10 +724,17 @@ function classifyGeminiHttpError(
   const summary = bodyText.slice(0, 500);
 
   if (status === 401) {
+    // Some Gemini models reject an API key with ACCESS_TOKEN_TYPE_UNSUPPORTED
+    // even though that same key works with other models. The models.list
+    // preflight catches globally invalid keys; treat generateContent 401s as
+    // model-specific so the fallback chain can continue.
+    const detail = /ACCESS_TOKEN_TYPE_UNSUPPORTED/i.test(bodyText)
+      ? "ACCESS_TOKEN_TYPE_UNSUPPORTED"
+      : "authentication rejected for this model";
     return {
       retrySameModel: false,
-      error: new FatalGeminiAuthError(
-        `[${modelId}] Authentication failed (401). Check GEMINI_API_KEY: ${summary}`,
+      error: new NonRetryableModelError(
+        `[${modelId}] HTTP 401 (${detail}); advancing to the next model: ${summary}`,
       ),
     };
   }
@@ -758,6 +813,7 @@ async function callGeminiModelOnce(
     responseSchema: Record<string, unknown>;
   },
   recentTitles: string[],
+  timeoutMs = model.timeoutMs,
 ): Promise<GeneratedPost> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
     model.id,
@@ -788,7 +844,7 @@ async function callGeminiModelOnce(
       "x-goog-api-key": GEMINI_API_KEY as string,
     },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(model.timeoutMs),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!res.ok) {
@@ -874,17 +930,33 @@ async function generatePostWithGeminiFallbackChain(
   const chain = buildGeminiModelChain();
   const promptPayload = buildSeoPrompt(recentTitles, suggestedCategoryName);
   const failures: Array<{ model: string; error: string }> = [];
+  const deadline = Date.now() + GEMINI_CHAIN_BUDGET_MS;
+  let budgetExceeded = false;
 
   console.log(
     `[auto-blog] Gemini fallback chain (${chain.length} models): ${chain
       .map((m) => m.id)
       .join(" -> ")}`,
   );
+  console.log(
+    `[auto-blog] Gemini generation budget: ${GEMINI_CHAIN_BUDGET_MS / 60_000} minutes.`,
+  );
 
-  for (let modelIndex = 0; modelIndex < chain.length; modelIndex++) {
+  for (
+    let modelIndex = 0;
+    modelIndex < chain.length && !budgetExceeded;
+    modelIndex++
+  ) {
     const model = chain[modelIndex];
 
     for (let attempt = 1; attempt <= model.maxAttempts; attempt++) {
+      const remainingMs = deadline - Date.now();
+      if (remainingMs <= 0) {
+        budgetExceeded = true;
+        console.warn("[auto-blog] Gemini chain budget exhausted before the next attempt.");
+        break;
+      }
+
       try {
         console.log(
           `[auto-blog] [${modelIndex + 1}/${chain.length}] Trying ${model.label} (${model.id}) — attempt ${attempt}/${model.maxAttempts} [${model.role}]...`,
@@ -894,6 +966,7 @@ async function generatePostWithGeminiFallbackChain(
           model,
           promptPayload,
           recentTitles,
+          Math.min(model.timeoutMs, remainingMs),
         );
 
         console.log(
@@ -901,10 +974,6 @@ async function generatePostWithGeminiFallbackChain(
         );
         return result;
       } catch (error) {
-        if (error instanceof FatalGeminiAuthError) {
-          throw error;
-        }
-
         const errMsg = error instanceof Error ? error.message : String(error);
         failures.push({
           model: `${model.id} (attempt ${attempt})`,
@@ -918,6 +987,20 @@ async function generatePostWithGeminiFallbackChain(
           const customDelay = (error as { retryAfterMs?: number })?.retryAfterMs;
           const backoffMs =
             customDelay ?? Math.min(10_000, 2_500 * attempt + Math.floor(Math.random() * 1_000));
+          const budgetLeftMs = deadline - Date.now();
+
+          if (budgetLeftMs <= 0) {
+            budgetExceeded = true;
+            console.warn("[auto-blog] Gemini chain budget exhausted while attempting a model.");
+            break;
+          }
+          if (backoffMs >= budgetLeftMs) {
+            console.warn(
+              `[auto-blog] Not enough chain budget to retry ${model.id} after ${backoffMs}ms; advancing to the next model.`,
+            );
+            break;
+          }
+
           console.warn(
             `[auto-blog] ${errMsg} — retrying ${model.id} in ${backoffMs}ms...`,
           );
@@ -942,9 +1025,10 @@ async function generatePostWithGeminiFallbackChain(
   const failureReport = failures
     .map((f, idx) => `  ${idx + 1}. ${f.model}: ${f.error}`)
     .join("\n");
-  throw new Error(
-    `All ${chain.length} Gemini models in the fallback chain failed to generate a valid blog post:\n${failureReport}`,
-  );
+  const summary = budgetExceeded
+    ? `Gemini fallback chain exhausted its ${GEMINI_CHAIN_BUDGET_MS / 60_000}-minute budget`
+    : `All ${chain.length} Gemini models in the fallback chain failed to generate a valid blog post`;
+  throw new Error(`${summary}:\n${failureReport}`);
 }
 
 type PexelsPhoto = {
@@ -1047,6 +1131,7 @@ async function main() {
   requireEnv();
 
   console.log(`[auto-blog] Starting run${DRY_RUN ? " (DRY_RUN)" : ""}...`);
+  await preflightGeminiApiKey();
 
   await mongoose.connect(MONGODB_URI as string);
   const db = mongoose.connection.getClient().db();
