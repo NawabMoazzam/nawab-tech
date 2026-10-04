@@ -27,8 +27,13 @@ with the `admin` role.
 A script + GitHub Actions workflow can publish one AI-written blog post with
 an AI-generated cover image every day, for free:
 
-- `scripts/auto-blog/generate-and-publish.ts` - generates a post with the
-  Gemini API (free tier), picks a matching cover photo from the Pexels API
+- `scripts/auto-blog/generate-and-publish.ts` - generates an SEO-optimized post
+  using a capability-ordered Gemini API fallback chain (`gemini-3.8-flash` →
+  `gemini-2.5-pro` → `gemini-3.1-pro-preview` → `gemini-3.7-flash` →
+  `gemini-3.6-flash` → `gemini-3.5-flash` → `gemini-3-flash-preview` →
+  `gemini-2.5-flash` → `gemini-3.5-flash-lite` → `gemini-3.1-flash-lite` →
+  `gemini-2.5-flash-lite`), validates structural and on-page SEO quality before
+  accepting a model's output, picks a matching cover photo from the Pexels API
   (free stock photo library, just needs a free API key), uploads it to
   ImageKit, and inserts the post directly into MongoDB with
   `status: "published"`.

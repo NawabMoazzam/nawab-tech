@@ -117,7 +117,11 @@ export const articleSchema = (post: BlogPost) =>
     },
     headline: post.title,
     description: post.seo?.description || post.excerpt,
-    image: post.coverImage || "",
+    image: post.seo?.ogImage || post.coverImage || "",
+    articleSection: post.category?.name,
+    keywords: (post.seo?.keywords?.length ? post.seo.keywords : post.tags)?.join(
+      ", ",
+    ),
     author: {
       "@type": "Person",
       name: post.author?.name || "Nawab Tech",
