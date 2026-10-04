@@ -44,16 +44,28 @@ export async function generateMetadata({
     return {};
   }
 
+  const cleanSeoTitle = (post.seo?.title || post.title)
+    .replace(/\s*\|\s*Nawab\s*Tech.*$/i, "")
+    .trim();
+  const seoDescription = post.seo?.description || post.excerpt;
+  const seoKeywords =
+    post.seo?.keywords && post.seo.keywords.length > 0
+      ? post.seo.keywords
+      : post.tags;
+  const ogImage = post.seo?.ogImage || post.coverImage;
+
   return {
-    title: post.seo?.title || post.title,
-    description: post.seo?.description || post.excerpt,
+    title: cleanSeoTitle,
+    description: seoDescription,
+    keywords: seoKeywords,
     alternates: {
       canonical: `/blog/${post.slug}`,
     },
     openGraph: {
       type: "article",
-      title: post.seo?.title || post.title,
-      description: post.seo?.description || post.excerpt,
+      title: `${cleanSeoTitle} | Nawab Tech`,
+      description: seoDescription,
+      url: `/blog/${post.slug}`,
       publishedTime: post.publishedAt
         ? new Date(post.publishedAt).toISOString()
         : undefined,
@@ -61,8 +73,15 @@ export async function generateMetadata({
         ? new Date(post.updatedAt).toISOString()
         : undefined,
       authors: [post.author?.name || "Nawab Tech"],
-      tags: post.tags,
-      images: post.coverImage ? [post.coverImage] : undefined,
+      section: post.category?.name,
+      tags: seoKeywords,
+      images: ogImage ? [ogImage] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${cleanSeoTitle} | Nawab Tech`,
+      description: seoDescription,
+      images: ogImage ? [ogImage] : undefined,
     },
   };
 }
