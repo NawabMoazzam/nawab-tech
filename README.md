@@ -81,6 +81,24 @@ BLOG_REVALIDATE_SECRET
 And add `BLOG_REVALIDATE_SECRET` (same value) as a Vercel environment
 variable too, so `/api/revalidate` accepts the script's request.
 
+### Gemini troubleshooting
+
+- The script sanitizes `GEMINI_API_KEY` by trimming whitespace, surrounding
+  quotes, and an optional `Bearer` prefix. In GitHub Actions, store the Google
+  AI Studio API key itself as the secret; don't include a `Bearer` prefix.
+- Each run checks the key with Gemini's `models.list` endpoint before opening a
+  MongoDB connection. If this preflight fails, verify the key is valid, belongs
+  to the intended Google project, and is allowed to use the Gemini API. Update
+  the `GEMINI_API_KEY` Actions secret, then rerun the workflow.
+- A `401 ACCESS_TOKEN_TYPE_UNSUPPORTED` from one model is treated as a
+  model-specific rejection, so the script advances through the fallback chain
+  instead of stopping the run. If every model is rejected, check the key and
+  its Gemini API access.
+- The complete generation/fallback chain has an eight-minute budget. If that
+  budget is exhausted, review the Actions log for the models and retry delays
+  that consumed the time. `GEMINI_MODEL` and `GEMINI_MODELS` can put preferred
+  models first in the chain.
+
 ## Category migration
 
 Blog posts now reference a `Category` document by ObjectId. Run the idempotent
