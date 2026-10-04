@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db";
 import BlogPostModel from "@/models/blog-post";
 import Category from "@/models/category";
+import { inferCoverImageSource } from "@/lib/cover-image";
 import type { BlogPost } from "./types";
 
 // Build-time fallback used only when no database is configured.
@@ -52,6 +53,7 @@ type DbPostRecord = {
   featured?: boolean;
   coverImage?: string;
   coverImageFileId?: string;
+  coverImageSource?: string;
   seo?: BlogPost["seo"];
   content?: string;
   status?: "draft" | "published";
@@ -95,6 +97,7 @@ function mapDbPostToType(value: unknown): BlogPost | null {
     featured: dbPost.featured || false,
     coverImage: dbPost.coverImage || "",
     coverImageFileId: dbPost.coverImageFileId || "",
+    coverImageSource: inferCoverImageSource(dbPost),
     contentPath: dbPost.slug,
     seo: dbPost.seo || {
       title: dbPost.title,

@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Image as ImageKitImage } from "@imagekit/next";
 import { ImageIcon } from "lucide-react";
 
+import { buildExternalCoverSources } from "@/lib/cover-image";
 import { urlEndpoint } from "@/lib/imagekit";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +20,7 @@ type PostCoverProps = {
   className?: string;
   /** Classes for the `<img>` itself, e.g. hover transitions. */
   imageClassName?: string;
-  /** Preload the image when it is the LCP element (hero covers only). */
+  /** Load the image eagerly when it is above the fold (hero covers only). */
   preload?: boolean;
   /** Render a neutral placeholder when the post has no cover. Default `true`. */
   placeholder?: boolean;
@@ -28,9 +29,12 @@ type PostCoverProps = {
 /**
  * Renders a blog cover image inside its own positioned box.
  *
- * Cover images live on ImageKit, so when a URL endpoint is configured they are
- * served through the ImageKit loader (responsive srcset + transformations).
- * Local paths and plain remote URLs fall back to `next/image`.
+ * Three kinds of cover are handled:
+ * - ImageKit uploads go through the ImageKit loader (responsive srcset +
+ *   transformations).
+ * - Local public paths go through `next/image`.
+ * - External images (Pexels, etc.) are loaded straight from their own CDN with
+ *   that CDN's sizing parameters, so they never cost ImageKit storage.
  */
 export function PostCover({
   src,
@@ -49,40 +53,71 @@ export function PostCover({
     return (
       <div
         aria-hidden
-        className={cn(
-          "flex items-center justify-center bg-muted",
-          className,
-        )}
+        className={cn("flex items-center justify-center bg-muted", className)}
       >
         <ImageIcon className="size-5 text-muted-foreground/40" />
       </div>
     );
   }
 
-  const imageProps = {
-    fill: true,
-    sizes,
-    preload,
-    className: cn("object-cover", imageClassName),
-  };
+  const isLocalPath = cover.startsWith("/");
+  const useImageKit =
+    !isLocalPath && Boolean(urlEndpoint) && cover.startsWith(urlEndpoint);
 
-  // Uploaded covers are absolute ImageKit URLs — those go through the
-  // ImageKit loader so they get responsive srcset + transformations.
-  // Local paths (and setups without an ImageKit endpoint) use `next/image`.
-  const useImageKit = Boolean(urlEndpoint) && /^https?:\/\//i.test(cover);
+  const imageClassNameCombined = cn("object-cover", imageClassName);
 
-  return (
-    <div className={cn("relative overflow-hidden bg-muted", className)}>
-      {useImageKit ? (
+  if (useImageKit) {
+    return (
+      <div className={cn("relative overflow-hidden bg-muted", className)}>
         <ImageKitImage
           urlEndpoint={urlEndpoint}
           src={cover}
           alt={alt}
-          {...imageProps}
+          fill
+          sizes={sizes}
+          preload={preload}
+          className={imageClassNameCombined}
         />
-      ) : (
-        <Image src={cover} alt={alt} {...imageProps} />
-      )}
+      </div>
+    );
+  }
+
+  if (isLocalPath) {
+    return (
+      <div className={cn("relative overflow-hidden bg-muted", className)}>
+        <Image
+          src={cover}
+          alt={alt}
+          fill
+          sizes={sizes}
+          preload={preload}
+          className={imageClassNameCombined}
+        />
+      </div>
+    );
+  }
+
+  // External cover: serve it from its own CDN instead of copying it into
+  // ImageKit. A plain <img> lets us hand over that CDN's own srcset, which
+  // `next/image` cannot generate for a host it does not manage.
+  const { src: externalSrc, srcSet } = buildExternalCoverSources(cover);
+
+  return (
+    <div className={cn("relative overflow-hidden bg-muted", className)}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- external CDN, sized via its own srcset */}
+      <img
+        src={externalSrc}
+        srcSet={srcSet}
+        sizes={sizes}
+        alt={alt}
+        loading={preload ? "eager" : "lazy"}
+        fetchPriority={preload ? "high" : "auto"}
+        decoding="async"
+        className={cn(
+          "absolute inset-0 size-full object-cover",
+          imageClassName,
+        )}
+      />
     </div>
   );
 }

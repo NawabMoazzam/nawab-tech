@@ -1,5 +1,6 @@
 import { isObjectIdOrHexString } from "mongoose";
 
+import { inferCoverImageSource } from "@/lib/cover-image";
 import { slugify } from "@/lib/slugify";
 
 export type ValidPostInput = {
@@ -11,6 +12,7 @@ export type ValidPostInput = {
   tags: string[];
   coverImage: string;
   coverImageFileId: string;
+  coverImageSource: "upload" | "external";
   status: "draft" | "published";
   featured: boolean;
   seo: {
@@ -79,6 +81,22 @@ export function validatePostInput(input: unknown): PostValidationResult {
     return { success: false, error: "Select a valid category." };
   }
 
+  const coverImage = stringValue(value.coverImage);
+  const coverImageSource = inferCoverImageSource({
+    coverImage,
+    coverImageFileId: stringValue(value.coverImageFileId),
+    coverImageSource: stringValue(value.coverImageSource),
+  });
+
+  const isAbsoluteUrl = /^https?:\/\//i.test(coverImage);
+
+  if (coverImage && coverImageSource === "external" && !isAbsoluteUrl) {
+    return {
+      success: false,
+      error: "Cover image URL must start with http:// or https://.",
+    };
+  }
+
   return {
     success: true,
     data: {
@@ -88,8 +106,13 @@ export function validatePostInput(input: unknown): PostValidationResult {
       content,
       category,
       tags: stringList(value.tags),
-      coverImage: stringValue(value.coverImage),
-      coverImageFileId: stringValue(value.coverImageFileId),
+      coverImage,
+      // External covers have no ImageKit file to clean up.
+      coverImageFileId:
+        coverImageSource === "external"
+          ? ""
+          : stringValue(value.coverImageFileId),
+      coverImageSource,
       status,
       featured: value.featured === true,
       seo: {

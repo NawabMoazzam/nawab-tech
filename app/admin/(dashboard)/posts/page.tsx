@@ -17,6 +17,7 @@ type AdminPost = {
   slug: string;
   excerpt: string;
   coverImage?: string;
+  coverImageSource?: string;
   status: "draft" | "published";
   featured?: boolean;
   readingTime?: number;
@@ -97,6 +98,16 @@ export default async function PostsListPage() {
                     <span>{post.category?.name || "No category"}</span>
                     <span aria-hidden>•</span>
                     <span>{post.readingTime} min</span>
+                    {post.coverImage ? (
+                      <>
+                        <span aria-hidden>•</span>
+                        <span>
+                          {post.coverImageSource === "external"
+                            ? "External URL"
+                            : "ImageKit"}
+                        </span>
+                      </>
+                    ) : null}
                   </div>
                 </div>
 

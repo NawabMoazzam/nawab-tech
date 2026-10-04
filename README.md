@@ -22,7 +22,24 @@ Public email/password sign-up is disabled, so an existing Better Auth account
 is required. `npm run seed:admin -- admin@example.com` can mark that account
 with the `admin` role.
 
-## Daily automated blog post (free, GitHub Actions)
+## Blog cover images
+
+Every place a post is listed (home insights, blog index, category pages, the
+featured post, related posts, the article hero and the admin lists) shows the
+post's cover image. A cover can come from one of two places, chosen in the
+post form under **Cover Image**:
+
+- **Upload** — the file is uploaded to ImageKit, which stores, resizes and
+  transforms it. Deleting it from the form also removes it from ImageKit.
+- **Pexels / URL** — the image is used straight from its own CDN, so it costs
+  no ImageKit storage. Search Pexels from the form (needs `PEXELS_API_KEY` on
+  the server; the key is never exposed to the browser) or paste any image URL.
+
+Externally hosted covers are served with that CDN's own sizing parameters, so a
+post keeps loading fast without going through ImageKit or the Next.js image
+optimizer.
+
+## ## Daily automated blog post (free, GitHub Actions)
 
 A script + GitHub Actions workflow can publish one AI-written blog post with
 an AI-generated cover image every day, for free:
@@ -34,9 +51,9 @@ an AI-generated cover image every day, for free:
   `gemini-2.5-flash` → `gemini-3.5-flash-lite` → `gemini-3.1-flash-lite` →
   `gemini-2.5-flash-lite`), validates structural and on-page SEO quality before
   accepting a model's output, picks a matching cover photo from the Pexels API
-  (free stock photo library, just needs a free API key), uploads it to
-  ImageKit, and inserts the post directly into MongoDB with
-  `status: "published"`.
+  (free stock photo library, just needs a free API key) and stores that URL
+  directly on the post — so daily posts use no ImageKit storage — then inserts
+  the post into MongoDB with `status: "published"`.
 - `.github/workflows/daily-blog.yml` - runs that script once a day on
   GitHub Actions' free scheduler.
 - `app/api/revalidate` - a secret-protected endpoint the script pings after
@@ -55,13 +72,21 @@ Then for a real run:
 npm run auto-blog
 ```
 
-Required environment variables (same MongoDB/ImageKit values already used by
-the app), plus:
+Required environment variables:
 
 ```bash
+MONGODB_URI=               # same value the app uses
 GEMINI_API_KEY=            # https://aistudio.google.com/apikey (free)
 PEXELS_API_KEY=            # https://www.pexels.com/api/ (free, no card)
 BLOG_REVALIDATE_SECRET=    # any random string; must match the value on Vercel
+```
+
+Optional:
+
+```bash
+AUTO_BLOG_UPLOAD_COVER=true   # copy the Pexels photo into ImageKit instead of
+                              # linking it; needs IMAGEKIT_PUBLIC_KEY,
+                              # IMAGEKIT_PRIVATE_KEY and IMAGEKIT_URL_ENDPOINT
 ```
 
 To run it daily for free via GitHub Actions, add these as **GitHub repo
@@ -71,12 +96,13 @@ secrets** (Settings → Secrets and variables → Actions):
 MONGODB_URI
 GEMINI_API_KEY
 PEXELS_API_KEY
-IMAGEKIT_PUBLIC_KEY
-IMAGEKIT_PRIVATE_KEY
-IMAGEKIT_URL_ENDPOINT
 NEXT_PUBLIC_BASE_URL
 BLOG_REVALIDATE_SECRET
 ```
+
+Add `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_URL_ENDPOINT` and
+`AUTO_BLOG_UPLOAD_COVER=true` only if you want the daily cover uploaded to
+ImageKit instead of linked from Pexels.
 
 And add `BLOG_REVALIDATE_SECRET` (same value) as a Vercel environment
 variable too, so `/api/revalidate` accepts the script's request.

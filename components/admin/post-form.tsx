@@ -6,8 +6,12 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageKitUploader } from "./imagekit-uploader";
+import { CoverImageField } from "./cover-image-field";
 import { useTheme } from "next-themes";
+import {
+  inferCoverImageSource,
+  type CoverImageSource,
+} from "@/lib/cover-image";
 
 // MDEditor is client-only
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -22,6 +26,7 @@ type PostFormData = {
   tags: string[];
   coverImage: string;
   coverImageFileId: string;
+  coverImageSource: CoverImageSource;
   status: "draft" | "published";
   featured: boolean;
   seo: { title: string; description: string; keywords: string[] };
@@ -36,6 +41,7 @@ const initialData: PostFormData = {
   tags: [],
   coverImage: "",
   coverImageFileId: "",
+  coverImageSource: "upload",
   status: "draft",
   featured: false,
   seo: { title: "", description: "", keywords: [] },
@@ -79,6 +85,8 @@ export function PostForm({
         ...initialPost,
         tags: initialPost.tags || [],
         category: initialCategory,
+        // Posts saved before covers had a source are inferred from their data.
+        coverImageSource: inferCoverImageSource(initialPost),
         seo: initialPost.seo || initialData.seo,
       };
     }
@@ -346,15 +354,14 @@ export function PostForm({
               </p>
             </CardHeader>
             <CardContent>
-              <ImageKitUploader
-                value={form.coverImage}
-                fileId={form.coverImageFileId}
-                onChange={(url, fileId) =>
-                  setForm((current) => ({
-                    ...current,
-                    coverImage: url,
-                    coverImageFileId: fileId,
-                  }))
+              <CoverImageField
+                value={{
+                  coverImage: form.coverImage,
+                  coverImageFileId: form.coverImageFileId,
+                  coverImageSource: form.coverImageSource,
+                }}
+                onChange={(cover) =>
+                  setForm((current) => ({ ...current, ...cover }))
                 }
               />
             </CardContent>
