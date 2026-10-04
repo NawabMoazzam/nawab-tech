@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 import type { BlogPost } from "@/lib/blog/types";
+import { PostCover } from "@/components/blog/post-cover";
 
 type RelatedPostsProps = {
   posts: BlogPost[];
@@ -47,7 +48,7 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
                   {String(index + 1).padStart(2, "0")}
                 </span>
 
-                <div className="sm:col-span-9">
+                <div className="sm:col-span-6">
                   <div className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
                     {post.category.name}
                   </div>
@@ -60,6 +61,14 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
                     {post.excerpt}
                   </p>
                 </div>
+
+                <PostCover
+                  src={post.coverImage}
+                  alt={post.title}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 30vw, 280px"
+                  className="order-first aspect-[16/10] w-full border border-border sm:order-none sm:col-span-3"
+                  imageClassName="transition-transform duration-700 group-hover:scale-105"
+                />
 
                 <div className="flex items-center justify-end sm:col-span-2">
                   <span className="flex size-11 items-center justify-center border border-border transition-all group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:bg-foreground group-hover:text-background">

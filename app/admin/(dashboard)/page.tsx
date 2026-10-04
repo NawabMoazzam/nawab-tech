@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PostCover } from "@/components/blog/post-cover";
 import { connectDB } from "@/lib/db";
 import BlogPost from "@/models/blog-post";
 import Category from "@/models/category";
@@ -24,6 +25,7 @@ type DashboardPost = {
   status: "draft" | "published";
   featured?: boolean;
   excerpt?: string;
+  coverImage?: string;
   updatedAt?: Date | string;
   publishedAt?: Date | string;
   category?: { name?: string } | null;
@@ -203,23 +205,34 @@ export default async function AdminDashboard() {
                   key={post._id.toString()}
                   className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium">{post.title}</p>
-                      <Badge
-                        variant={
-                          post.status === "published" ? "default" : "secondary"
-                        }
-                      >
-                        {post.status}
-                      </Badge>
-                      {post.featured ? (
-                        <Badge variant="outline">Featured</Badge>
-                      ) : null}
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <PostCover
+                      src={post.coverImage}
+                      alt=""
+                      sizes="48px"
+                      className="size-12 shrink-0 rounded border"
+                    />
+
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium">{post.title}</p>
+                        <Badge
+                          variant={
+                            post.status === "published"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {post.status}
+                        </Badge>
+                        {post.featured ? (
+                          <Badge variant="outline">Featured</Badge>
+                        ) : null}
+                      </div>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {post.excerpt || "No excerpt yet."}
+                      </p>
                     </div>
-                    <p className="line-clamp-2 text-sm text-muted-foreground">
-                      {post.excerpt || "No excerpt yet."}
-                    </p>
                   </div>
 
                   <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-col sm:items-end">

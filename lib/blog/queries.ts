@@ -29,7 +29,7 @@ const fallbackPosts: BlogPost[] = [
       description:
         "Learn what affects business website costs, what you should expect from a professional website, and how to choose the right solution for your business.",
     },
-    coverImage: "",
+    coverImage: "/nawab-tech-banner.png",
   },
 ];
 

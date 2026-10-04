@@ -10,8 +10,7 @@ import {
   getPostBySlugWithContent,
 } from "@/lib/blog/queries";
 import { ArticleContent } from "@/components/blog/article-content";
-import { Image } from "@imagekit/next";
-import { urlEndpoint } from "@/lib/imagekit";
+import { PostCover } from "@/components/blog/post-cover";
 import { articleSchema } from "@/lib/schema-markup";
 import AdsterraBanner, {
   AdsterraLeaderboard,
@@ -155,19 +154,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   </time>
                 </div>
 
-                {post.coverImage && (
-                  <div className="mt-12">
-                    <Image
-                      urlEndpoint={urlEndpoint}
-                      src={post.coverImage}
-                      alt={post.title}
-                      width={1280}
-                      height={720}
-                      priority
-                      className="w-full aspect-video object-cover rounded-lg border"
-                    />
-                  </div>
-                )}
+                <PostCover
+                  src={post.coverImage}
+                  alt={post.title}
+                  sizes="(max-width: 1280px) 100vw, 1024px"
+                  preload
+                  placeholder={false}
+                  className="mt-12 aspect-video w-full rounded-lg border border-border"
+                />
               </div>
             </div>
           </section>
