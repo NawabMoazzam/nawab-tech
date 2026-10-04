@@ -48,12 +48,14 @@ export function HowWeWork() {
               </p>
 
               <div className="mt-16 border-t border-border">
-                {principles.map((principle) => (
+                {principles.map((principle, index) => (
                   <div
                     key={principle.number}
-                    className="grid gap-5 border-b border-border py-8 last:border-b-0 sm:grid-cols-12 sm:py-10"
+                    data-reveal="up"
+                    style={{ transitionDelay: `${index * 90}ms` }}
+                    className="group grid gap-5 border-b border-border py-8 transition-colors last:border-b-0 hover:bg-muted/30 sm:grid-cols-12 sm:py-10"
                   >
-                    <span className="text-xs text-muted-foreground sm:col-span-2">
+                    <span className="text-xs text-muted-foreground transition-colors group-hover:text-primary sm:col-span-2">
                       {principle.number}
                     </span>
 

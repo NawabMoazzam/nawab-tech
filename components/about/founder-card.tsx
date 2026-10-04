@@ -16,7 +16,9 @@ export function FounderCard() {
         <div className="container-main">
           <div className="grid border-x border-border lg:grid-cols-2">
             {/* Visual */}
-            <div className="relative min-h-125 overflow-hidden border-b border-border bg-muted lg:min-h-175 lg:border-b-0 lg:border-r group">
+            <div className="group relative min-h-125 overflow-hidden border-b border-border bg-muted lg:min-h-175 lg:border-b-0 lg:border-r">
+              <span aria-hidden className="section-glow" />
+
               <Image
                 src="/profile.jpg"
                 alt="Nawab, founder of Nawab Tech"

@@ -54,7 +54,11 @@ export default function AboutPage() {
 
               <div className="mt-14 grid gap-8 lg:grid-cols-12">
                 <div className="lg:col-span-5 lg:col-start-8">
-                  <p className="text-lg leading-relaxed text-muted-foreground sm:text-xl">
+                  <p
+                    data-reveal="up"
+                    style={{ transitionDelay: "240ms" }}
+                    className="text-lg leading-relaxed text-muted-foreground sm:text-xl"
+                  >
                     Nawab Tech is a technology studio focused on building
                     practical digital products for businesses — from
                     high-performing websites to custom applications, dashboards,

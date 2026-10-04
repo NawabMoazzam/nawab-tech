@@ -7,6 +7,8 @@ import {
   Workflow,
 } from "lucide-react";
 
+type CSSVars = React.CSSProperties & Record<`--${string}`, string | number>;
+
 const systemNodes = [
   {
     label: "Website",
@@ -38,21 +40,36 @@ export function Hero() {
           {/* Main Content */}
           <div className="flex flex-col justify-between border-b border-border p-6 pt-16 sm:p-10 lg:col-span-7 lg:border-b-0 lg:border-r lg:p-14 lg:pt-24">
             <div>
-              <div className="eyebrow mb-8 flex items-center gap-3 text-muted-foreground">
+              <div
+                data-reveal="up"
+                className="eyebrow mb-8 flex items-center gap-3 text-muted-foreground"
+              >
                 <span className="size-2 bg-primary" />
                 Digital products for growing businesses
               </div>
 
-              <h1 className="hero-title max-w-4xl text-[clamp(3.5rem,7vw,7.5rem)] font-medium leading-[0.88] tracking-[-0.075em]">
-                Digital products
-                <br />
-                built around
-                <br />
-                <span className="accent-gradient">your business.</span>
+              <h1 className="hero-title-split max-w-4xl text-[clamp(3.5rem,7vw,7.5rem)] font-medium leading-[0.88] tracking-[-0.075em]">
+                <span className="hero-line" style={{ "--line": 0 } as CSSVars}>
+                  <span>Digital products</span>
+                </span>
+
+                <span className="hero-line" style={{ "--line": 1 } as CSSVars}>
+                  <span>built around</span>
+                </span>
+
+                <span className="hero-line" style={{ "--line": 2 } as CSSVars}>
+                  <span>
+                    <span className="shimmer-text">your business.</span>
+                  </span>
+                </span>
               </h1>
             </div>
 
-            <div className="mt-16 grid gap-8 lg:mt-24 lg:grid-cols-2">
+            <div
+              data-reveal="up"
+              style={{ transitionDelay: "420ms" }}
+              className="mt-16 grid gap-8 lg:mt-24 lg:grid-cols-2"
+            >
               <p className="max-w-md text-lg leading-relaxed tracking-[-0.02em] text-muted-foreground">
                 We build high-performing websites, custom web applications,
                 dashboards, and connected digital systems that help businesses
@@ -94,10 +111,18 @@ export function Hero() {
               <div className="absolute left-1/2 top-[18%] h-[64%] w-px -translate-x-1/2 bg-border" />
 
               <div className="absolute left-[14%] right-[14%] top-1/2 h-px -translate-y-1/2 bg-border" />
-              <span aria-hidden="true" className="signal-dot signal-dot-horizontal" />
-              <span aria-hidden="true" className="signal-dot signal-dot-vertical" />
+              <span
+                aria-hidden="true"
+                className="signal-dot signal-dot-horizontal"
+              />
+              <span
+                aria-hidden="true"
+                className="signal-dot signal-dot-vertical"
+              />
 
               {/* Center System */}
+              <span aria-hidden className="core-halo" />
+
               <div className="system-core relative z-10 flex size-32 flex-col items-center justify-center border border-foreground bg-background sm:size-40">
                 <div className="text-3xl font-medium tracking-[-0.07em] sm:text-4xl">
                   NT
@@ -109,13 +134,14 @@ export function Hero() {
               </div>
 
               {/* Nodes */}
-              {systemNodes.map((node) => {
+              {systemNodes.map((node, index) => {
                 const Icon = node.icon;
 
                 return (
                   <div
                     key={node.label}
-                    className={`absolute ${node.position} z-10`}
+                    className={`float-soft absolute ${node.position} z-10`}
+                    style={{ "--float-delay": `${index * 900}ms` } as CSSVars}
                   >
                     <div className="system-node flex items-center gap-2 border border-border bg-background px-3 py-2 sm:px-4 sm:py-3">
                       <Icon size={14} strokeWidth={1.5} />
@@ -129,11 +155,22 @@ export function Hero() {
               })}
             </div>
 
-            <div className="border-t border-border pt-5">
+            <div className="flex items-end justify-between gap-8 border-t border-border pt-5">
               <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
                 Connect your customer experience, internal workflows, data, and
                 technology into something that works as one.
               </p>
+
+              <div
+                aria-hidden
+                className="hidden shrink-0 flex-col items-center gap-3 sm:flex"
+              >
+                <span className="scroll-cue" />
+
+                <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Scroll
+                </span>
+              </div>
             </div>
           </div>
         </div>

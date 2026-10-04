@@ -20,7 +20,11 @@ export default function FAQPage() {
                 <span className="text-primary">Questions</span>
               </h1>
 
-              <p className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p
+                data-reveal="up"
+                style={{ transitionDelay: "240ms" }}
+                className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+              >
                 Not sure if we&apos;re the right fit? Here are some of the
                 questions we hear most often.
               </p>

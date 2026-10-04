@@ -118,7 +118,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   Back to insights
                 </Link>
 
-                <div className="mt-16 flex flex-wrap items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
+                <div
+                  data-reveal="up"
+                  className="mt-16 flex flex-wrap items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground"
+                >
                   <span>{post.category.name}</span>
 
                   <span>•</span>
@@ -128,7 +131,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
                 <h1 className="display-text mt-8 max-w-6xl">{post.title}</h1>
 
-                <p className="mt-10 max-w-3xl text-xl leading-relaxed text-muted-foreground sm:text-2xl">
+                <p
+                  data-reveal="up"
+                  style={{ transitionDelay: "120ms" }}
+                  className="mt-10 max-w-3xl text-xl leading-relaxed text-muted-foreground sm:text-2xl"
+                >
                   {post.excerpt}
                 </p>
 
@@ -154,14 +161,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   </time>
                 </div>
 
-                <PostCover
-                  src={post.coverImage}
-                  alt={post.title}
-                  sizes="(max-width: 1280px) 100vw, 1024px"
-                  preload
-                  placeholder={false}
-                  className="mt-12 aspect-video w-full rounded-lg border border-border"
-                />
+                <div
+                  data-reveal="scale"
+                  className="mt-12 overflow-hidden rounded-lg"
+                >
+                  <PostCover
+                    src={post.coverImage}
+                    alt={post.title}
+                    sizes="(max-width: 1280px) 100vw, 1024px"
+                    preload
+                    placeholder={false}
+                    className="aspect-video w-full rounded-lg border border-border"
+                  />
+                </div>
               </div>
             </div>
           </section>

@@ -77,7 +77,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 <span className="text-primary">insights.</span>
               </h1>
 
-              <p className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p
+                data-reveal="up"
+                style={{ transitionDelay: "240ms" }}
+                className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+              >
                 {category.description ||
                   "Practical ideas and useful perspectives to help businesses make better decisions about their digital products and systems."}
               </p>
@@ -123,7 +127,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
                 <Link
                   href="/contact"
-                  className="flex w-fit items-center gap-3 bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
+                  className="premium-button flex w-fit items-center gap-3 bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
                 >
                   Start a project
                   <span>↗</span>

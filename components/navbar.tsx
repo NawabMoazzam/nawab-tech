@@ -12,7 +12,10 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/80 backdrop-blur-xl transition-colors">
+    <header
+      data-menu-open={open ? "true" : "false"}
+      className="site-header sticky top-0 z-50 border-b border-border/70 bg-background/80 backdrop-blur-xl"
+    >
       <div className="container-main">
         <nav className="flex h-20 items-center justify-between px-6 sm:px-0">
           {/* Brand */}
@@ -72,7 +75,7 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {open && (
-          <div className="border-t border-border p-6 md:hidden">
+          <div className="animate-in fade-in slide-in-from-top-2 border-t border-border p-6 duration-300 md:hidden">
             <div className="flex flex-col">
               {navLinks.map((link) => (
                 <Link

@@ -76,10 +76,12 @@ export function FAQ() {
                   <Accordion.Item
                     key={faq.question}
                     value={`item-${index}`}
+                    data-reveal="up"
+                    style={{ transitionDelay: `${index * 60}ms` }}
                     className="border-b border-border"
                   >
                     <Accordion.Header>
-                      <Accordion.Trigger className="group flex w-full items-center justify-between gap-8 p-6 text-left sm:p-10 lg:p-12">
+                      <Accordion.Trigger className="group flex w-full items-center justify-between gap-8 p-6 text-left transition-colors hover:bg-muted/30 sm:p-10 lg:p-12">
                         <span className="flex gap-6 text-lg font-medium tracking-tight sm:text-xl">
                           <span className="text-xs text-muted-foreground">
                             0{index + 1}

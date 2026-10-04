@@ -16,7 +16,9 @@ export function ServiceCTA({
   return (
     <section className="section-border">
       <div className="container-main">
-        <div className="border-x border-border bg-primary p-6 text-primary-foreground sm:p-10 lg:p-20">
+        <div className="relative overflow-hidden border-x border-border bg-primary p-6 text-primary-foreground sm:p-10 lg:p-20">
+          <span aria-hidden className="sheen-sweep" />
+
           <div className="grid gap-10 lg:grid-cols-12">
             <div className="lg:col-span-8">
               <h2 className="text-4xl font-medium leading-[0.95] tracking-[-0.06em] sm:text-6xl lg:text-7xl">
@@ -33,11 +35,14 @@ export function ServiceCTA({
             <div className="lg:col-span-4 lg:flex lg:items-end lg:justify-end">
               <a
                 href={ctaHref}
-                className="flex w-fit items-center gap-3 bg-background px-6 py-4 text-sm font-medium text-foreground"
+                className="group flex w-fit items-center gap-3 bg-background px-6 py-4 text-sm font-medium text-foreground transition-transform hover:-translate-y-0.5"
               >
                 {ctaLabel}
 
-                <ArrowRight size={17} />
+                <ArrowRight
+                  size={17}
+                  className="transition-transform group-hover:translate-x-1"
+                />
               </a>
             </div>
           </div>

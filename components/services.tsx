@@ -1,10 +1,6 @@
-import {
-  ArrowUpRight,
-  BarChart3,
-  Bot,
-  Globe2,
-  Layers3,
-} from "lucide-react";
+import { ArrowUpRight, BarChart3, Bot, Globe2, Layers3 } from "lucide-react";
+
+import type { CSSVars } from "@/lib/utils";
 
 const services = [
   {
@@ -141,12 +137,17 @@ export function Services() {
 
                 {/* Visual */}
                 <div className="service-visual relative flex min-h-72 items-center justify-center overflow-hidden border-t border-border bg-muted/30 p-8 lg:col-span-4 lg:min-h-0 lg:border-l lg:border-t-0">
-                  <ServiceVisual index={index} />
+                  <div
+                    className="float-soft"
+                    style={{ "--float-delay": `${index * 700}ms` } as CSSVars}
+                  >
+                    <ServiceVisual index={index} />
+                  </div>
 
                   <a
                     href={service.href}
                     aria-label={`Learn more about ${service.title}`}
-                    className="absolute right-6 top-6 flex size-12 items-center justify-center border border-border bg-background transition-colors group-hover:bg-foreground group-hover:text-background"
+                    className="absolute right-6 top-6 flex size-12 items-center justify-center border border-border bg-background transition-all duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:bg-foreground group-hover:text-background"
                   >
                     <ArrowUpRight size={18} />
                   </a>

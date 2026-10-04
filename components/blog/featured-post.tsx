@@ -13,6 +13,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
     <Link
       href={`/blog/${post.slug}`}
       className="group block border-x border-border"
+      data-tilt="off"
     >
       <article className="grid lg:grid-cols-2">
         <div className="relative min-h-105 overflow-hidden border-b border-border bg-primary p-6 text-primary-foreground sm:p-10 lg:min-h-150 lg:border-b-0 lg:border-r lg:p-14">
