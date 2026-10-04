@@ -15,15 +15,22 @@ export function ServiceBenefits({ benefits }: ServiceBenefitsProps) {
     <section className="section-border">
       <div className="container-main">
         <div className="grid border-x border-border md:grid-cols-2 lg:grid-cols-4">
-          {benefits.map((benefit) => {
+          {benefits.map((benefit, index) => {
             const Icon = benefit.icon;
 
             return (
               <article
                 key={benefit.title}
-                className="group border-b border-border p-6 sm:p-10 md:border-r md:last:border-r-0 lg:border-b-0"
+                data-tilt
+                data-reveal="up"
+                style={{ transitionDelay: `${index * 80}ms` }}
+                className="hover-sweep group relative overflow-hidden border-b border-border p-6 sm:p-10 md:border-r md:last:border-r-0 lg:border-b-0"
               >
-                <Icon size={24} strokeWidth={1.4} />
+                <Icon
+                  size={24}
+                  strokeWidth={1.4}
+                  className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:text-primary"
+                />
 
                 <h2 className="mt-10 text-xl font-medium tracking-[-0.03em]">
                   {benefit.title}

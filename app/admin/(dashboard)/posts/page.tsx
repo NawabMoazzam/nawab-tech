@@ -1,10 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Edit, Eye, Plus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PostCover } from "@/components/blog/post-cover";
 import { connectDB } from "@/lib/db";
 import BlogPost from "@/models/blog-post";
 import "@/models/category";
@@ -17,6 +17,7 @@ type AdminPost = {
   slug: string;
   excerpt: string;
   coverImage?: string;
+  coverImageSource?: string;
   status: "draft" | "published";
   featured?: boolean;
   readingTime?: number;
@@ -62,21 +63,12 @@ export default async function PostsListPage() {
           {posts.map((post) => (
             <Card key={post._id.toString()}>
               <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start">
-                {post.coverImage ? (
-                  <div className="relative h-36 w-full shrink-0 overflow-hidden rounded border sm:h-16 sm:w-24">
-                    <Image
-                      src={post.coverImage}
-                      alt=""
-                      fill
-                      sizes="(max-width: 640px) 100vw, 96px"
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex h-20 w-full shrink-0 items-center justify-center rounded border bg-muted text-xs text-muted-foreground sm:h-16 sm:w-24">
-                    No image
-                  </div>
-                )}
+                <PostCover
+                  src={post.coverImage}
+                  alt=""
+                  sizes="(max-width: 640px) 100vw, 96px"
+                  className="h-36 w-full shrink-0 rounded border sm:h-16 sm:w-24"
+                />
 
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -106,6 +98,16 @@ export default async function PostsListPage() {
                     <span>{post.category?.name || "No category"}</span>
                     <span aria-hidden>•</span>
                     <span>{post.readingTime} min</span>
+                    {post.coverImage ? (
+                      <>
+                        <span aria-hidden>•</span>
+                        <span>
+                          {post.coverImageSource === "external"
+                            ? "External URL"
+                            : "ImageKit"}
+                        </span>
+                      </>
+                    ) : null}
                   </div>
                 </div>
 

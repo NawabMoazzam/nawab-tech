@@ -84,7 +84,7 @@ export function TestimonialCarousel({
 
       <div
         ref={trackRef}
-        className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-6 pb-5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary sm:px-10 lg:gap-6 lg:px-14 [scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]"
+        className="scroll-fade-x mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-6 pb-5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary sm:px-10 lg:gap-6 lg:px-14 [scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]"
         aria-label="Client testimonials"
         tabIndex={0}
       >
@@ -94,10 +94,10 @@ export function TestimonialCarousel({
           return (
             <figure
               key={item._id}
-              className={`relative flex min-h-[25rem] w-[86vw] max-w-[34rem] shrink-0 snap-start snap-always flex-col justify-between overflow-hidden rounded-[2rem] border p-7 shadow-[0_20px_60px_-36px_rgba(0,0,0,0.55)] sm:w-[30rem] sm:p-9 lg:w-[34rem] ${theme.card}`}
+              className={`group relative flex min-h-[25rem] w-[86vw] max-w-[34rem] shrink-0 snap-start snap-always flex-col justify-between overflow-hidden rounded-[2rem] border p-7 shadow-[0_20px_60px_-36px_rgba(0,0,0,0.55)] transition-transform duration-500 hover:-translate-y-1.5 sm:w-[30rem] sm:p-9 lg:w-[34rem] ${theme.card}`}
             >
               <div
-                className="pointer-events-none absolute -right-20 -top-20 size-60 rounded-full border border-current opacity-10"
+                className="pointer-events-none absolute -right-20 -top-20 size-60 rounded-full border border-current opacity-10 transition-transform duration-700 group-hover:scale-110"
                 aria-hidden
               />
               <div

@@ -1,3 +1,5 @@
+import type { CoverImageSource } from "@/lib/cover-image";
+
 export type BlogPost = {
   _id?: string;
   slug: string;
@@ -27,6 +29,13 @@ export type BlogPost = {
 
   coverImage?: string;
   coverImageFileId?: string;
+  /**
+   * Where the cover lives:
+   * - `upload` — the image was uploaded to ImageKit (has a `coverImageFileId`).
+   * - `external` — the image is used straight from its own CDN (e.g. Pexels),
+   *   so it costs nothing in ImageKit storage.
+   */
+  coverImageSource?: CoverImageSource;
 
   contentPath: string;
   content?: string;

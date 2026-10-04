@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 import type { BlogPost } from "@/lib/blog/types";
+import { PostCover } from "@/components/blog/post-cover";
 
 type BlogCardProps = {
   post: BlogPost;
@@ -21,7 +22,7 @@ export function BlogCard({ post, index }: BlogCardProps) {
           </span>
         </div>
 
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-6">
           <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.1em] text-muted-foreground">
             <span>{post.category.name}</span>
 
@@ -39,7 +40,15 @@ export function BlogCard({ post, index }: BlogCardProps) {
           </p>
         </div>
 
-        <div className="flex items-end justify-between lg:col-span-3 lg:items-center lg:justify-end">
+        <PostCover
+          src={post.coverImage}
+          alt={post.title}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 45vw, 300px"
+          className="aspect-[16/10] w-full border border-border lg:col-span-3"
+          imageClassName="transition-transform duration-700 group-hover:scale-105"
+        />
+
+        <div className="flex items-end justify-between gap-6 lg:col-span-2 lg:flex-col lg:items-end lg:justify-between">
           <time
             dateTime={post.publishedAt}
             className="text-xs text-muted-foreground"
@@ -51,7 +60,7 @@ export function BlogCard({ post, index }: BlogCardProps) {
             }).format(new Date(post.publishedAt))}
           </time>
 
-          <div className="ml-6 flex size-11 shrink-0 items-center justify-center border border-border transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:bg-foreground group-hover:text-background">
+          <div className="flex size-11 shrink-0 items-center justify-center border border-border transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:bg-foreground group-hover:text-background">
             <ArrowUpRight size={17} />
           </div>
         </div>

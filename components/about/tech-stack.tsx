@@ -5,14 +5,26 @@ const stackGroups = [
     number: "01",
     title: "Frontend",
     description: "Fast, accessible interfaces built for real users.",
-    technologies: ["TypeScript", "JavaScript", "React", "Next.js", "Tailwind CSS"],
+    technologies: [
+      "TypeScript",
+      "JavaScript",
+      "React",
+      "Next.js",
+      "Tailwind CSS",
+    ],
     icon: PanelsTopLeft,
   },
   {
     number: "02",
     title: "Backend",
     description: "Reliable application logic, APIs, and integrations.",
-    technologies: ["Node.js", "Express", "REST APIs", "Better Auth", "Automation"],
+    technologies: [
+      "Node.js",
+      "Express",
+      "REST APIs",
+      "Better Auth",
+      "Automation",
+    ],
     icon: Braces,
   },
   {
@@ -26,7 +38,13 @@ const stackGroups = [
     number: "04",
     title: "Delivery",
     description: "Practical tooling for shipping and maintaining products.",
-    technologies: ["Git & GitHub", "Docker", "Vercel", "ImageKit", "Cloud Deployments"],
+    technologies: [
+      "Git & GitHub",
+      "Docker",
+      "Vercel",
+      "ImageKit",
+      "Cloud Deployments",
+    ],
     icon: CloudCog,
   },
 ];
@@ -37,7 +55,9 @@ export function TechStack() {
       <div className="container-main">
         <div className="grid border-x border-border lg:grid-cols-12">
           <div className="p-6 sm:p-10 lg:col-span-4 lg:p-14">
-            <div className="eyebrow text-muted-foreground">Our technology stack</div>
+            <div className="eyebrow text-muted-foreground">
+              Our technology stack
+            </div>
             <h2 id="tech-stack-title" className="section-title mt-8">
               Modern tools.
               <br />
@@ -56,7 +76,10 @@ export function TechStack() {
               return (
                 <article
                   key={group.number}
-                  className={`group p-6 sm:p-10 ${
+                  data-tilt
+                  data-reveal="up"
+                  style={{ transitionDelay: `${index * 80}ms` }}
+                  className={`hover-sweep group relative overflow-hidden p-6 sm:p-10 ${
                     index % 2 === 1 ? "sm:border-l" : ""
                   } ${index > 1 ? "border-t" : index === 1 ? "border-t sm:border-t-0" : ""} border-border`}
                 >
@@ -79,7 +102,10 @@ export function TechStack() {
                     {group.description}
                   </p>
 
-                  <ul className="mt-8 flex flex-wrap gap-2" aria-label={`${group.title} technologies`}>
+                  <ul
+                    className="mt-8 flex flex-wrap gap-2"
+                    aria-label={`${group.title} technologies`}
+                  >
                     {group.technologies.map((technology) => (
                       <li
                         key={technology}

@@ -8,7 +8,9 @@ export function ContactCTA() {
         <div className="border-x border-border">
           <div className="grid lg:grid-cols-12">
             {/* Main CTA */}
-            <div className="contact-main p-6 sm:p-10 lg:col-span-8 lg:p-20">
+            <div className="contact-main relative overflow-hidden p-6 sm:p-10 lg:col-span-8 lg:p-20">
+              <span aria-hidden className="section-glow" />
+
               <div className="eyebrow flex items-center gap-3 text-muted-foreground">
                 Have a project in mind?
               </div>

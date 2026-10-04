@@ -64,7 +64,11 @@ export default function ServicesPage() {
                 <span className="text-primary">real problems.</span>
               </h1>
 
-              <p className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p
+                data-reveal="up"
+                style={{ transitionDelay: "240ms" }}
+                className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+              >
                 From business websites to custom software, we build digital
                 products around the way your business actually works.
               </p>
@@ -75,11 +79,13 @@ export default function ServicesPage() {
         <section className="section-border">
           <div className="container-main">
             <div className="border-x border-border">
-              {services.map((service) => (
+              {services.map((service, index) => (
                 <a
                   key={service.number}
                   href={service.href}
-                  className="group grid border-b border-border p-6 sm:p-10 lg:grid-cols-12 lg:p-14"
+                  data-reveal="up"
+                  style={{ transitionDelay: `${index * 80}ms` }}
+                  className="hover-sweep group relative grid overflow-hidden border-b border-border p-6 sm:p-10 lg:grid-cols-12 lg:p-14"
                 >
                   <div className="lg:col-span-1">
                     <span className="text-xs text-muted-foreground">
@@ -102,7 +108,7 @@ export default function ServicesPage() {
                       Explore service
                     </span>
 
-                    <div className="ml-6 flex size-12 items-center justify-center border border-border transition-colors group-hover:bg-foreground group-hover:text-background">
+                    <div className="ml-6 flex size-12 items-center justify-center border border-border transition-all duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:bg-foreground group-hover:text-background">
                       <ArrowUpRight size={18} />
                     </div>
                   </div>

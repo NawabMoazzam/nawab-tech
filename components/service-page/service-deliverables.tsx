@@ -25,13 +25,19 @@ export function ServiceDeliverables({
             {items.map((item, index) => (
               <div
                 key={item}
-                className="flex items-center gap-5 border-b border-border p-6 sm:p-8"
+                data-reveal="up"
+                style={{ transitionDelay: `${index * 60}ms` }}
+                className="group flex items-center gap-5 border-b border-border p-6 transition-colors hover:bg-muted/40 sm:p-8"
               >
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground transition-colors group-hover:text-primary">
                   {String(index + 1).padStart(2, "0")}
                 </span>
 
-                <Check size={17} className="text-primary" strokeWidth={1.8} />
+                <Check
+                  size={17}
+                  className="text-primary transition-transform duration-500 group-hover:scale-125"
+                  strokeWidth={1.8}
+                />
 
                 <span className="text-base">{item}</span>
               </div>

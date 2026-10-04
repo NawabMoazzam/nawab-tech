@@ -80,7 +80,7 @@ export function WhyNawabTech() {
               return (
                 <article
                   key={principle.number}
-                  className="group grid border-b border-border p-6 sm:p-10 lg:grid-cols-12 lg:p-12"
+                  className="hover-sweep group relative grid overflow-hidden border-b border-border p-6 sm:p-10 lg:grid-cols-12 lg:p-12"
                 >
                   <div className="mb-8 flex items-start justify-between lg:col-span-2 lg:mb-0">
                     <span className="text-xs text-muted-foreground">

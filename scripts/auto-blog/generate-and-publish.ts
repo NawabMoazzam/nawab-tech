@@ -14,11 +14,13 @@
  *      times out, hits quota/rate limits, rejects this key for its token type
  *      (401), or produces sub-par/incomplete output, the chain advances to the
  *      next model. A models.list preflight checks the sanitized key first.
- *   3. Queries the Pexels API for a relevant, high-quality landscape photo.
- *   4. Uploads the cover image to ImageKit.
- *   5. Inserts the finished post directly into MongoDB with
+ *   3. Queries the Pexels API for a relevant, high-quality landscape photo and
+ *      stores that URL on the post, so automated covers use no ImageKit
+ *      storage. Set AUTO_BLOG_UPLOAD_COVER=true to copy the photo into
+ *      ImageKit instead (older behaviour).
+ *   4. Inserts the finished post directly into MongoDB with
  *      status: "published".
- *   6. Pings the site's /api/revalidate endpoint so the new post shows up
+ *   5. Pings the site's /api/revalidate endpoint so the new post shows up
  *      immediately instead of waiting for the hourly ISR refresh.
  *
  * Run locally:
@@ -28,9 +30,11 @@
  *   MONGODB_URI
  *   GEMINI_API_KEY
  *   PEXELS_API_KEY
- *   IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, IMAGEKIT_URL_ENDPOINT
  *
  * Optional:
+ *   AUTO_BLOG_UPLOAD_COVER=true - upload the Pexels photo to ImageKit instead
+ *     of linking it (requires IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY and
+ *     IMAGEKIT_URL_ENDPOINT)
  *   GEMINI_MODEL - primary model override (prepended to the fallback chain)
  *   GEMINI_MODELS - comma-separated custom model chain (prepended to defaults)
  *   NEXT_PUBLIC_BASE_URL / BETTER_AUTH_URL - used to call /api/revalidate
@@ -65,6 +69,12 @@ const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL || process.env.BETTER_AUTH_URL || "";
 const REVALIDATE_SECRET = process.env.BLOG_REVALIDATE_SECRET;
 const DRY_RUN = process.env.DRY_RUN === "true";
+/**
+ * Covers are stored as Pexels URLs by default: the photo is served from the
+ * Pexels CDN, so automated posts use no ImageKit storage. Flip this to "true"
+ * to copy the photo into ImageKit instead.
+ */
+const UPLOAD_COVER = process.env.AUTO_BLOG_UPLOAD_COVER === "true";
 
 type GeminiModelSpec = {
   id: string;
@@ -250,9 +260,11 @@ function requireEnv() {
   if (!MONGODB_URI) missing.push("MONGODB_URI");
   if (!GEMINI_API_KEY) missing.push("GEMINI_API_KEY");
   if (!PEXELS_API_KEY) missing.push("PEXELS_API_KEY");
-  if (!IMAGEKIT_PUBLIC_KEY) missing.push("IMAGEKIT_PUBLIC_KEY");
-  if (!IMAGEKIT_PRIVATE_KEY) missing.push("IMAGEKIT_PRIVATE_KEY");
-  if (!IMAGEKIT_URL_ENDPOINT) missing.push("IMAGEKIT_URL_ENDPOINT");
+  if (UPLOAD_COVER) {
+    if (!IMAGEKIT_PUBLIC_KEY) missing.push("IMAGEKIT_PUBLIC_KEY");
+    if (!IMAGEKIT_PRIVATE_KEY) missing.push("IMAGEKIT_PRIVATE_KEY");
+    if (!IMAGEKIT_URL_ENDPOINT) missing.push("IMAGEKIT_URL_ENDPOINT");
+  }
 
   if (missing.length) {
     console.error(
@@ -1168,21 +1180,36 @@ async function main() {
     `[auto-blog] Finding a cover photo on Pexels ("${generated.imageSearchQuery}")...`,
   );
   const pexelsUrl = await findCoverImageUrl(generated.imageSearchQuery);
-  const imageBuffer = await downloadImage(pexelsUrl);
 
-  console.log("[auto-blog] Uploading cover image to ImageKit...");
-  const imagekit = new ImageKit({
-    publicKey: IMAGEKIT_PUBLIC_KEY as string,
-    privateKey: IMAGEKIT_PRIVATE_KEY as string,
-    urlEndpoint: IMAGEKIT_URL_ENDPOINT as string,
-  });
+  let coverImage = pexelsUrl;
+  let coverImageFileId = "";
+  let coverImageSource: "upload" | "external" = "external";
 
-  const upload = await imagekit.upload({
-    file: imageBuffer,
-    fileName: `${slug}.png`,
-    folder: "/nawab-tech/blog",
-    useUniqueFileName: true,
-  });
+  if (UPLOAD_COVER) {
+    console.log("[auto-blog] Uploading cover image to ImageKit...");
+    const imageBuffer = await downloadImage(pexelsUrl);
+
+    const imagekit = new ImageKit({
+      publicKey: IMAGEKIT_PUBLIC_KEY as string,
+      privateKey: IMAGEKIT_PRIVATE_KEY as string,
+      urlEndpoint: IMAGEKIT_URL_ENDPOINT as string,
+    });
+
+    const upload = await imagekit.upload({
+      file: imageBuffer,
+      fileName: `${slug}.png`,
+      folder: "/nawab-tech/blog",
+      useUniqueFileName: true,
+    });
+
+    coverImage = upload.url;
+    coverImageFileId = upload.fileId;
+    coverImageSource = "upload";
+  } else {
+    console.log(
+      "[auto-blog] Using the Pexels URL directly (no ImageKit upload).",
+    );
+  }
 
   console.log("[auto-blog] Ensuring category exists...");
   const category = await ensureCategory(categories, generated.category);
@@ -1202,8 +1229,9 @@ async function main() {
       name: "Nawab Tech",
       role: "Web Development & Digital Products",
     },
-    coverImage: upload.url,
-    coverImageFileId: upload.fileId,
+    coverImage,
+    coverImageFileId,
+    coverImageSource,
     status: "published" as const,
     featured: false,
     readingTime,
@@ -1212,7 +1240,7 @@ async function main() {
       title: generated.seoTitle,
       description: generated.seoDescription,
       keywords: generated.seoKeywords,
-      ogImage: upload.url,
+      ogImage: coverImage,
     },
     publishedAt: now,
     createdAt: now,

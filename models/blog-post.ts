@@ -49,6 +49,12 @@ const blogPostSchema = new Schema(
       default: "",
       required: false,
     },
+    coverImageSource: {
+      type: String,
+      enum: ["upload", "external"],
+      default: "upload",
+      required: false,
+    },
     status: {
       type: String,
       enum: ["draft", "published"],

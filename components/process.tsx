@@ -70,6 +70,7 @@ export function Process() {
             return (
               <article
                 key={step.number}
+                data-tilt
                 data-reveal-item
                 style={{ transitionDelay: `${index * 70}ms` }}
                 className="group relative flex min-h-107.5 flex-col justify-between border-b border-border p-6 sm:p-10 md:border-r md:last:border-r-0 lg:min-h-125 lg:border-b-0"
@@ -80,7 +81,7 @@ export function Process() {
                     {step.number}
                   </span>
 
-                  <div className="flex size-12 items-center justify-center border border-border transition-colors group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
+                  <div className="flex size-12 items-center justify-center border border-border transition-all duration-500 group-hover:scale-105 group-hover:rotate-6 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
                     <Icon size={20} strokeWidth={1.4} />
                   </div>
                 </div>

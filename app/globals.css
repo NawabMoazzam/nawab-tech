@@ -102,6 +102,12 @@
 
   --radius: 0.25rem;
 
+  /* Premium motion + surface tokens */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.22, 0.68, 0.24, 1);
+  --grid-line: color-mix(in oklch, var(--foreground) 7%, transparent);
+  --glow: color-mix(in oklch, var(--primary) 55%, transparent);
+
   --sidebar: oklch(0.95 0.006 90);
   --sidebar-foreground: oklch(0.18 0.008 70);
   --sidebar-primary: oklch(0.59 0.17 35);
@@ -180,16 +186,7 @@
     text-rendering: optimizeLegibility;
   }
 
-  body::before {
-    position: fixed;
-    z-index: -1;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 68% 36% at 3% 4%, color-mix(in oklch, var(--primary) 9%, transparent), transparent 72%),
-      radial-gradient(ellipse 48% 32% at 98% 54%, color-mix(in oklch, var(--primary) 6%, transparent), transparent 74%);
-    content: "";
-    pointer-events: none;
-  }
+  /* The ambient backdrop now lives in <SiteBackground />. */
 
   html {
     @apply font-sans;
@@ -233,8 +230,16 @@
 
   .editorial-grid {
     background-image:
-      radial-gradient(ellipse at 82% 24%, color-mix(in oklch, var(--primary) 13%, transparent), transparent 46%),
-      radial-gradient(ellipse at 8% 78%, color-mix(in oklch, var(--primary) 6%, transparent), transparent 44%),
+      radial-gradient(
+        ellipse at 82% 24%,
+        color-mix(in oklch, var(--primary) 13%, transparent),
+        transparent 46%
+      ),
+      radial-gradient(
+        ellipse at 8% 78%,
+        color-mix(in oklch, var(--primary) 6%, transparent),
+        transparent 44%
+      ),
       linear-gradient(
         to right,
         transparent calc(50% - 0.5px),
@@ -279,8 +284,18 @@
     position: relative;
     isolation: isolate;
     background-image:
-      radial-gradient(ellipse at 82% 46%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 42%),
-      linear-gradient(to right, transparent calc(50% - 0.5px), var(--border) calc(50% - 0.5px), var(--border) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+      radial-gradient(
+        ellipse at 82% 46%,
+        color-mix(in oklch, var(--primary) 8%, transparent),
+        transparent 42%
+      ),
+      linear-gradient(
+        to right,
+        transparent calc(50% - 0.5px),
+        var(--border) calc(50% - 0.5px),
+        var(--border) calc(50% + 0.5px),
+        transparent calc(50% + 0.5px)
+      );
   }
 
   .hero-surface > .container-main {
@@ -293,36 +308,51 @@
   }
 
   .system-core {
-    box-shadow: 0 0 0 8px color-mix(in oklch, var(--primary) 5%, transparent), 0 18px 54px -28px color-mix(in oklch, var(--primary) 55%, transparent);
-    transition: box-shadow 350ms ease, transform 350ms ease;
+    box-shadow:
+      0 0 0 8px color-mix(in oklch, var(--primary) 5%, transparent),
+      0 18px 54px -28px color-mix(in oklch, var(--primary) 55%, transparent);
+    transition:
+      box-shadow 350ms ease,
+      transform 350ms ease;
   }
 
   .system-core:hover {
     transform: translateY(-3px);
-    box-shadow: 0 0 0 12px color-mix(in oklch, var(--primary) 7%, transparent), 0 22px 62px -24px color-mix(in oklch, var(--primary) 60%, transparent);
+    box-shadow:
+      0 0 0 12px color-mix(in oklch, var(--primary) 7%, transparent),
+      0 22px 62px -24px color-mix(in oklch, var(--primary) 60%, transparent);
   }
 
   .system-node {
     box-shadow: 0 8px 24px -18px var(--foreground);
-    transition: transform 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
+    transition:
+      transform 250ms ease,
+      border-color 250ms ease,
+      box-shadow 250ms ease;
   }
 
   .system-node:hover {
     transform: translateY(-3px);
     border-color: color-mix(in oklch, var(--primary) 50%, var(--border));
-    box-shadow: 0 12px 28px -18px color-mix(in oklch, var(--primary) 50%, transparent);
+    box-shadow: 0 12px 28px -18px
+      color-mix(in oklch, var(--primary) 50%, transparent);
   }
 
   .premium-button {
     position: relative;
     overflow: hidden;
-    box-shadow: 0 8px 24px -16px color-mix(in oklch, var(--primary) 85%, transparent);
-    transition: transform 250ms ease, box-shadow 250ms ease, background-color 250ms ease;
+    box-shadow: 0 8px 24px -16px
+      color-mix(in oklch, var(--primary) 85%, transparent);
+    transition:
+      transform 250ms ease,
+      box-shadow 250ms ease,
+      background-color 250ms ease;
   }
 
   .premium-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 30px -14px color-mix(in oklch, var(--primary) 90%, transparent);
+    box-shadow: 0 12px 30px -14px
+      color-mix(in oklch, var(--primary) 90%, transparent);
   }
 
   .premium-button:active {
@@ -330,18 +360,32 @@
   }
 
   .service-visual {
-    background-image: radial-gradient(ellipse at center, color-mix(in oklch, var(--primary) 9%, transparent), transparent 68%);
+    background-image: radial-gradient(
+      ellipse at center,
+      color-mix(in oklch, var(--primary) 9%, transparent),
+      transparent 68%
+    );
   }
 }
 
 @keyframes hero-rise {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .group:hover .service-visual {
-    background-image: radial-gradient(ellipse at center, color-mix(in oklch, var(--primary) 14%, transparent), transparent 70%);
+    background-image: radial-gradient(
+      ellipse at center,
+      color-mix(in oklch, var(--primary) 14%, transparent),
+      transparent 70%
+    );
   }
 
   .group:hover .service-visual > * {
@@ -356,7 +400,9 @@
 }
 
 .motion-ready main :is(section, article, a.group) {
-  transition: opacity 650ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition:
+    opacity 650ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .motion-ready main :is(section, article, a.group).is-visible {
@@ -430,7 +476,8 @@
     height: 5px;
     border-radius: 999px;
     background: var(--primary);
-    box-shadow: 0 0 12px 2px color-mix(in oklch, var(--primary) 48%, transparent);
+    box-shadow: 0 0 12px 2px
+      color-mix(in oklch, var(--primary) 48%, transparent);
     pointer-events: none;
   }
 
@@ -451,7 +498,12 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: 36%;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 24%), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 24%),
+    transparent
+  );
   content: "";
   opacity: 0;
   pointer-events: none;
@@ -462,12 +514,16 @@
   .premium-button:hover::after {
     opacity: 1;
     transform: translateX(360%) skewX(-18deg);
-    transition: transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 180ms ease;
+    transition:
+      transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 180ms ease;
   }
 }
 
 .motion-ready main [data-reveal-item] {
-  transition: opacity 600ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition:
+    opacity 600ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .motion-ready main [data-reveal-item]:not(.is-visible) {
@@ -481,17 +537,37 @@
 }
 
 @keyframes signal-horizontal {
-  0% { left: 14%; opacity: 0; }
-  12% { opacity: 0.9; }
-  82% { opacity: 0.9; }
-  100% { left: 86%; opacity: 0; }
+  0% {
+    left: 14%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  82% {
+    opacity: 0.9;
+  }
+  100% {
+    left: 86%;
+    opacity: 0;
+  }
 }
 
 @keyframes signal-vertical {
-  0% { top: 18%; opacity: 0; }
-  12% { opacity: 0.9; }
-  82% { opacity: 0.9; }
-  100% { top: 82%; opacity: 0; }
+  0% {
+    top: 18%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  82% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 82%;
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -522,24 +598,30 @@ main section::before {
 }
 
 main :is(article.group, a.group) {
-  transition: transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
+  transition:
+    transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1),
     box-shadow 280ms ease;
 }
 
 main :is(article.group, a.group):hover {
   z-index: 1;
   transform: translateY(-2px);
-  box-shadow: 0 16px 38px -34px color-mix(in oklch, var(--primary) 90%, transparent);
+  box-shadow: 0 16px 38px -34px
+    color-mix(in oklch, var(--primary) 90%, transparent);
 }
 
 main :is(a, button).bg-primary {
-  box-shadow: 0 8px 24px -18px color-mix(in oklch, var(--primary) 90%, transparent);
-  transition: transform 240ms ease, box-shadow 240ms ease;
+  box-shadow: 0 8px 24px -18px
+    color-mix(in oklch, var(--primary) 90%, transparent);
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease;
 }
 
 main :is(a, button).bg-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px -14px color-mix(in oklch, var(--primary) 90%, transparent);
+  box-shadow: 0 12px 30px -14px
+    color-mix(in oklch, var(--primary) 90%, transparent);
 }
 
 main :is(a, button).bg-primary:active {
@@ -616,7 +698,12 @@ main :is(a, button).bg-primary:not(.premium-button)::after {
   position: absolute;
   inset: 0 auto 0 0;
   width: 38%;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 28%), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 28%),
+    transparent
+  );
   content: "";
   opacity: 0;
   pointer-events: none;
@@ -627,10 +714,561 @@ main :is(a, button).bg-primary:not(.premium-button)::after {
   main :is(a, button).bg-primary:not(.premium-button):hover::after {
     opacity: 1;
     transform: translateX(360%) skewX(-18deg);
-    transition: transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 180ms ease;
+    transition:
+      transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 180ms ease;
   }
 
   main .form-input:focus-visible {
-    box-shadow: 0 10px 24px -22px color-mix(in oklch, var(--primary) 90%, transparent);
+    box-shadow: 0 10px 24px -22px
+      color-mix(in oklch, var(--primary) 90%, transparent);
+  }
+}
+
+/* -------------------------------------------------
+   Premium surfaces: ambient backdrop, depth, reveal
+------------------------------------------------- */
+
+.site-backdrop {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.site-backdrop > * {
+  position: absolute;
+}
+
+/* Faint architectural grid — the "minimal" part of the background. */
+.site-backdrop__grid {
+  inset: -1px;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 68px 68px;
+  mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 78%),
+    rgb(0 0 0 / 32%) 52%,
+    transparent 86%
+  );
+}
+
+/* Slow aurora washes. Radial gradients instead of blur filters keep these
+   cheap: only the transform animates, and it is composited on the GPU. */
+.site-backdrop__aurora {
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in oklch, var(--primary) 24%, transparent),
+    transparent 68%
+  );
+  opacity: 0.5;
+  will-change: transform;
+  animation: aurora-drift 38s var(--ease-soft) infinite alternate;
+}
+
+.site-backdrop__aurora--a {
+  top: -20vh;
+  left: -12vw;
+  width: 62vw;
+  height: 62vw;
+  min-width: 520px;
+  min-height: 520px;
+}
+
+.site-backdrop__aurora--b {
+  top: 26vh;
+  right: -20vw;
+  width: 56vw;
+  height: 56vw;
+  min-width: 440px;
+  min-height: 440px;
+  animation-duration: 47s;
+  animation-delay: -9s;
+}
+
+.site-backdrop__aurora--c {
+  bottom: -28vh;
+  left: 22vw;
+  width: 48vw;
+  height: 48vw;
+  min-width: 380px;
+  min-height: 380px;
+  opacity: 0.36;
+  animation-duration: 56s;
+  animation-delay: -21s;
+}
+
+/* Film grain — keeps flat colour areas from looking digital. */
+.site-backdrop__grain {
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: soft-light;
+  opacity: 0.045;
+}
+
+.site-backdrop__vignette {
+  inset: 0;
+  background: radial-gradient(
+    ellipse 78% 62% at 50% 40%,
+    transparent 52%,
+    color-mix(in oklch, var(--background) 82%, transparent) 100%
+  );
+}
+
+/* Scroll / reading progress. */
+.site-progress {
+  position: fixed;
+  z-index: 60;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--primary) 45%, transparent),
+    var(--primary)
+  );
+  transform: scaleX(var(--scroll-progress, 0));
+  transform-origin: left;
+  opacity: 0;
+  transition:
+    opacity 400ms ease,
+    transform 120ms linear;
+  pointer-events: none;
+}
+
+html[data-scrolled="true"] .site-progress {
+  opacity: 1;
+}
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -3%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-3%, 4%, 0) scale(0.96);
+  }
+}
+
+/* -------------------------------------------------
+   Reveal variants
+   `data-reveal="up" | "fade" | "scale" | "blur"`
+   Only applied once the JS confirms motion is welcome
+   (`.motion-ready` on <html>), so content is never
+   hidden from JS-less or reduced-motion visitors.
+------------------------------------------------- */
+
+.motion-ready main [data-reveal] {
+  transition:
+    opacity 700ms var(--ease-premium),
+    transform 700ms var(--ease-premium),
+    filter 700ms var(--ease-premium);
+}
+
+.motion-ready main [data-reveal]:not(.is-visible) {
+  opacity: 0;
+}
+
+.motion-ready main [data-reveal="up"]:not(.is-visible) {
+  transform: translateY(24px);
+}
+
+.motion-ready main [data-reveal="scale"]:not(.is-visible) {
+  transform: scale(0.97);
+}
+
+.motion-ready main [data-reveal="blur"]:not(.is-visible) {
+  filter: blur(7px);
+  transform: translateY(14px);
+}
+
+.motion-ready main [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* -------------------------------------------------
+   Pointer tilt (subtle 3D response on cards)
+------------------------------------------------- */
+
+[data-tilt]:not([data-tilt="off"]) {
+  transform: perspective(1100px) rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg)) translateY(var(--tilt-lift, 0px));
+  transition: transform 420ms var(--ease-premium);
+}
+
+main :is(article.group, a.group) {
+  transform: perspective(1100px) rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg)) translateY(var(--tilt-lift, 0px));
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  main :is(article.group, a.group):hover {
+    transform: perspective(1100px) rotateX(var(--tilt-x, 0deg))
+      rotateY(var(--tilt-y, 0deg)) translateY(-4px) scale(1.006);
+  }
+}
+
+/* -------------------------------------------------
+   Small premium primitives
+------------------------------------------------- */
+
+@layer components {
+  /* Masked, line-by-line heading reveal. */
+  .hero-line {
+    display: block;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+    overflow: hidden;
+  }
+
+  .hero-line > span {
+    display: block;
+    animation: hero-line-rise 1000ms var(--ease-premium) both;
+    animation-delay: calc(var(--line, 0) * 110ms + 120ms);
+  }
+
+  /* Gentle, continuous levitation for decorative elements. */
+  .float-soft {
+    animation: float-soft 7s ease-in-out infinite;
+    animation-delay: var(--float-delay, 0ms);
+  }
+
+  /* Slow light sweep across gradient text. */
+  .shimmer-text {
+    background-image: linear-gradient(
+      100deg,
+      var(--primary) 20%,
+      color-mix(in oklch, var(--primary) 45%, var(--foreground)) 38%,
+      var(--primary) 56%
+    );
+    background-size: 260% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .shimmer-text {
+      animation: text-shimmer 9s linear infinite;
+    }
+  }
+
+  /* Animated underline for inline text links. */
+  .link-underline {
+    position: relative;
+    text-decoration: none;
+  }
+
+  .link-underline::after {
+    position: absolute;
+    right: 0;
+    bottom: -3px;
+    left: 0;
+    height: 1px;
+    background: currentColor;
+    content: "";
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 380ms var(--ease-premium);
+  }
+
+  .link-underline:hover::after,
+  .link-underline:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@keyframes hero-line-rise {
+  from {
+    opacity: 0;
+    transform: translateY(108%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes text-shimmer {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 260% 50%;
+  }
+}
+
+/* Section hairlines get a gradient highlight once revealed. */
+main .section-border::after {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--primary) 60%, transparent) 22%,
+    color-mix(in oklch, var(--primary) 60%, transparent) 78%,
+    transparent
+  );
+  content: "";
+  opacity: 0;
+  transition: opacity 900ms ease;
+  pointer-events: none;
+}
+
+main .section-border.is-visible::after {
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-ready main [data-reveal]:not(.is-visible) {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .site-backdrop__aurora {
+    animation: none;
+  }
+}
+
+/* -------------------------------------------------
+   Hero details
+------------------------------------------------- */
+
+main section.hero-surface h1.hero-title-split {
+  animation: none;
+}
+
+/* Breathing halo behind the hero's "one system" core. */
+.core-halo {
+  position: absolute;
+  z-index: 0;
+  width: 30rem;
+  height: 30rem;
+  max-width: 84%;
+  max-height: 84%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in oklch, var(--primary) 16%, transparent),
+    transparent 66%
+  );
+  opacity: 0.7;
+  pointer-events: none;
+  animation: core-breathe 9s ease-in-out infinite;
+}
+
+/* Vertical scroll hint with a travelling light. */
+.scroll-cue {
+  position: relative;
+  width: 1px;
+  height: 46px;
+  overflow: hidden;
+  background: linear-gradient(to bottom, var(--border), transparent);
+}
+
+.scroll-cue::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 16px;
+  background: var(--primary);
+  content: "";
+  animation: scroll-cue 2.4s var(--ease-soft) infinite;
+}
+
+@keyframes core-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes scroll-cue {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(46px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .core-halo,
+  .scroll-cue::after {
+    animation: none;
+  }
+}
+
+/* -------------------------------------------------
+   Shared interaction details
+------------------------------------------------- */
+
+/* A slow diagonal light sweep for solid-colour panels. */
+.sheen-sweep {
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  left: -30%;
+  width: 24%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 14%),
+    transparent
+  );
+  transform: rotate(12deg);
+  opacity: 0;
+  pointer-events: none;
+  animation: sheen 11s ease-in-out infinite;
+}
+
+/* Light wash that fades in behind cards and rows on hover. */
+.hover-sweep::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    color-mix(in oklch, var(--primary) 9%, transparent),
+    transparent 62%
+  );
+  content: "";
+  opacity: 0;
+  transition: opacity 500ms var(--ease-premium);
+  pointer-events: none;
+}
+
+.hover-sweep:hover::before {
+  opacity: 1;
+}
+
+.hover-sweep > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Soft edge fade for horizontal scrollers. */
+.scroll-fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 2.5%,
+    black 97.5%,
+    transparent
+  );
+}
+
+/* Warm glow used behind key sections. */
+.section-glow {
+  position: absolute;
+  right: auto;
+  bottom: -55%;
+  left: -12%;
+  width: 40rem;
+  height: 40rem;
+  max-width: 120%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in oklch, var(--primary) 13%, transparent),
+    transparent 66%
+  );
+  pointer-events: none;
+}
+
+.footer-glow {
+  position: absolute;
+  top: -70%;
+  left: 50%;
+  width: 130%;
+  height: 130%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in oklch, var(--primary) 12%, transparent),
+    transparent 62%
+  );
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* -------------------------------------------------
+   Header: reacts to scroll depth and direction
+   (driven by `data-scrolled` / `data-scroll-direction`
+   on <html>, set in ScrollAnimations)
+------------------------------------------------- */
+
+header.site-header {
+  transition:
+    transform 480ms var(--ease-premium),
+    background-color 320ms ease,
+    box-shadow 320ms ease,
+    border-color 320ms ease;
+}
+
+html[data-scrolled="true"] header.site-header {
+  background-color: color-mix(in oklch, var(--background) 78%, transparent);
+  box-shadow: 0 14px 36px -32px
+    color-mix(in oklch, var(--foreground) 75%, transparent);
+}
+
+html[data-scroll-direction="down"]
+  header.site-header:not([data-menu-open="true"]) {
+  transform: translateY(-100%);
+}
+
+@keyframes sheen {
+  0%,
+  58% {
+    opacity: 0;
+    transform: translateX(0) rotate(12deg);
+  }
+  64% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(540%) rotate(12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheen-sweep {
+    animation: none;
   }
 }

@@ -50,10 +50,12 @@ export function WhatWeBuild() {
           </div>
 
           <div className="border-t border-border lg:col-span-8 lg:border-l lg:border-t-0">
-            {services.map((service) => (
+            {services.map((service, index) => (
               <Link
                 key={service.number}
                 href={service.href}
+                data-reveal="up"
+                style={{ transitionDelay: `${index * 80}ms` }}
                 className="group grid gap-6 border-b border-border p-6 transition-colors last:border-b-0 hover:bg-muted/40 sm:grid-cols-12 sm:p-10"
               >
                 <span className="text-xs text-muted-foreground sm:col-span-1">

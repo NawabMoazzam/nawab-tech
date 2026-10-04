@@ -29,7 +29,9 @@ const companyLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-border">
+    <footer className="relative overflow-hidden border-t border-border">
+      <span aria-hidden className="footer-glow" />
+
       <div className="container-main">
         {/* Main Footer */}
         <div className="grid border-x border-border lg:grid-cols-12">
@@ -74,7 +76,7 @@ export function Footer() {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="w-fit text-sm transition-colors hover:text-primary"
+                  className="link-underline w-fit text-sm transition-colors hover:text-primary"
                 >
                   {link.label}
                 </a>

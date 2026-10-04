@@ -36,7 +36,11 @@ export default function ContactPage() {
                 to <span className="text-primary">build.</span>
               </h1>
 
-              <p className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p
+                data-reveal="up"
+                style={{ transitionDelay: "240ms" }}
+                className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+              >
                 Have a clear project in mind, or just know that something in
                 your business needs to work better? Tell us what&apos;s going
                 on. We&apos;ll help you figure out the next step.
@@ -69,7 +73,9 @@ export default function ContactPage() {
               </div>
 
               <div className="border-t border-border lg:col-span-8 lg:border-l lg:border-t-0">
-                <ProjectForm />
+                <div data-reveal="up" style={{ transitionDelay: "160ms" }}>
+                  <ProjectForm />
+                </div>
               </div>
             </div>
           </div>

@@ -48,7 +48,11 @@ export default async function BlogPage() {
                 <span className="text-primary">better digital products.</span>
               </h1>
 
-              <p className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p
+                data-reveal="up"
+                style={{ transitionDelay: "240ms" }}
+                className="mt-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+              >
                 Practical guides, insights, and ideas about websites, software,
                 automation, and digital systems for modern businesses.
               </p>
