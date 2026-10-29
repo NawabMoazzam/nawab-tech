@@ -114,7 +114,10 @@ async function generatePost(recentTopics: string[], category: string): Promise<S
       };
       if (!response.ok) {
         lastError = new Error(`${model} returned HTTP ${response.status}: ${body.error?.message || "unknown error"}`);
-        console.warn("[facebook-content] Model fallback:", lastError.message);
+        console.warn(
+          "[facebook-content] Model fallback:",
+          lastError instanceof Error ? lastError.message : String(lastError),
+        );
         continue;
       }
       const candidate = body.candidates?.[0];
