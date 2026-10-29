@@ -2,14 +2,18 @@ name: Daily auto blog post
 
 on:
   schedule:
-    # 08:00 Asia/Karachi (PKT, UTC+5) = 03:00 UTC. Adjust if you move house 🙂
+    # 08:00 Asia/Karachi (PKT, UTC+5) = 03:00 UTC
     - cron: "0 3 * * *"
   workflow_dispatch: {}
+
+concurrency:
+  group: daily-blog-and-facebook
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -34,3 +38,12 @@ jobs:
           NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
           BLOG_REVALIDATE_SECRET: ${{ secrets.BLOG_REVALIDATE_SECRET }}
         run: npm run auto-blog
+
+      - name: Share latest blog post on Facebook Page
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+          META_GRAPH_API_VERSION: ${{ vars.META_GRAPH_API_VERSION }}
+        run: npm run facebook-blog

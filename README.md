@@ -137,3 +137,27 @@ npm run migrate:categories
 
 The migration creates categories from the existing post data and updates each
 legacy post to use the new reference.
+
+
+## Facebook Page automation
+
+Two independent GitHub Actions workflows can publish to the Nawab Tech Facebook Page:
+
+- `.github/workflows/daily-blog.yml` — generates the daily blog at 08:00 Pakistan time, then shares the newly published article link on Facebook.
+- `.github/workflows/daily-facebook-content.yml` — creates a separate English Facebook caption and a branded 1200×1200 template graphic (no AI image generation) at 17:00 Pakistan time.
+
+Both workflows can also be run manually from **GitHub → Actions → select workflow → Run workflow**. The independent workflow installs ImageMagick on its temporary runner to render the branded SVG card to PNG. No extra npm package is needed.
+
+Add these repository secrets in **Settings → Secrets and variables → Actions**:
+
+```
+META_PAGE_ID
+META_PAGE_ACCESS_TOKEN
+```
+
+The existing `MONGODB_URI` and `GEMINI_API_KEY` secrets are reused. The blog workflow also uses the existing blog-generation secrets. `META_PAGE_ACCESS_TOKEN` must be a valid Page access token authorized to publish to that Page; do not put it in source code or a public environment variable. The Page ID is not a secret, but the workflow reads it from a secret for simpler setup.
+
+Optional repository variable:
+- `META_GRAPH_API_VERSION` — Graph API version, defaults to `v26.0` in the shared publisher if this variable is empty.
+
+The scripts store publication history in MongoDB's `socialpublishes` collection so reruns can avoid reposting already-published blog links or that day's independent post. A successful Facebook publish requires the Page token and the relevant Meta app/Page permissions to be configured correctly.

@@ -9,7 +9,9 @@
     "lint": "eslint",
     "seed:admin": "tsx scripts/seed-admin.ts",
     "migrate:categories": "tsx scripts/migrate-categories.ts",
-    "auto-blog": "tsx scripts/auto-blog/generate-and-publish.ts"
+    "auto-blog": "tsx scripts/auto-blog/generate-and-publish.ts",
+    "facebook-blog": "tsx scripts/social/publish-latest-blog.ts",
+    "facebook-content": "tsx scripts/social/generate-independent-post.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
