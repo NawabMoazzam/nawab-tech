@@ -122,7 +122,7 @@ export function createSocialCardSvg(input: {
   <rect x="88" y="92" width="10" height="70" rx="5" fill="url(#accent)"/>
   <text x="122" y="120" font-size="34" font-weight="700" letter-spacing="2" fill="#ffffff">NAWAB TECH</text>
   <text x="122" y="158" font-size="18" letter-spacing="4" fill="#93c5fd">BUILD SMARTER</text>
-  <rect x="88" y="300" width="auto" height="46" rx="23" fill="#1e3a5f"/>
+  <rect x="88" y="300" width="330" height="46" rx="23" fill="#1e3a5f"/>
   <text x="110" y="331" font-size="20" font-weight="600" letter-spacing="1.5" fill="#93c5fd">${xmlEscape(input.category.toUpperCase().slice(0, 42))}</text>
   ${headlineMarkup}
   ${subtitleMarkup}
