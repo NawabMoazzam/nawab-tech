@@ -2,8 +2,8 @@ name: Daily independent Facebook content
 
 on:
   schedule:
-    # 17:00 Asia/Karachi (UTC+5) = 12:00 UTC
-    - cron: "0 12 * * *"
+    # 09:00 Asia/Karachi (UTC+5) = 04:00 UTC
+    - cron: "0 4 * * *"
   workflow_dispatch: {}
 
 concurrency:
