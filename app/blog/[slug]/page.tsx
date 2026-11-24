@@ -51,7 +51,6 @@ export async function generateMetadata({
     post.seo?.keywords && post.seo.keywords.length > 0
       ? post.seo.keywords
       : post.tags;
-  const ogImage = post.seo?.ogImage || post.coverImage;
 
   return {
     title: cleanSeoTitle,
@@ -74,13 +73,11 @@ export async function generateMetadata({
       authors: [post.author?.name || "Nawab Tech"],
       section: post.category?.name,
       tags: seoKeywords,
-      images: ogImage ? [ogImage] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: `${cleanSeoTitle} | Nawab Tech`,
       description: seoDescription,
-      images: ogImage ? [ogImage] : undefined,
     },
   };
 }

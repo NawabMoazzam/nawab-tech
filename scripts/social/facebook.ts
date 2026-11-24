@@ -1,6 +1,5 @@
-import { execFileSync } from "node:child_process";
-
 const GRAPH_VERSION = process.env.META_GRAPH_API_VERSION || "v26.0";
+const GRAPH_BASE = `https://graph.facebook.com/${GRAPH_VERSION}`;
 
 function requiredMetaConfig() {
   const pageId = process.env.META_PAGE_ID?.trim();
@@ -17,7 +16,9 @@ async function parseGraphResponse(response: Response) {
   const body = (await response.json()) as {
     id?: string;
     post_id?: string;
-    error?: { message?: string; type?: string; code?: number };
+    success?: boolean;
+    error?: { message?: string; type?: string; code?: number; error_subcode?: number };
+    [key: string]: unknown;
   };
   if (!response.ok || body.error) {
     throw new Error(
@@ -38,23 +39,25 @@ export async function publishLinkToFacebook(input: {
     access_token: accessToken,
   });
   const response = await fetch(
-    `https://graph.facebook.com/${GRAPH_VERSION}/${encodeURIComponent(pageId)}/feed`,
+    `${GRAPH_BASE}/${encodeURIComponent(pageId)}/feed`,
     { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body },
   );
   const result = await parseGraphResponse(response);
-  const id = result.id || result.post_id;
+  const id = (result.id || result.post_id) as string | undefined;
   if (!id) throw new Error("Meta API returned success without a post ID.");
   return id;
 }
 
-export async function publishPngToFacebook(input: {
+export async function publishPhotoToFacebook(input: {
   png: Buffer;
   caption: string;
+  published?: boolean;
 }): Promise<string> {
   const { pageId, accessToken } = requiredMetaConfig();
   const form = new FormData();
   form.set("access_token", accessToken);
-  form.set("caption", input.caption);
+  if (input.published !== false) form.set("caption", input.caption);
+  if (input.published === false) form.set("published", "false");
   form.set(
     "source",
     new Blob([new Uint8Array(input.png)], { type: "image/png" }),
@@ -62,81 +65,183 @@ export async function publishPngToFacebook(input: {
   );
 
   const response = await fetch(
-    `https://graph.facebook.com/${GRAPH_VERSION}/${encodeURIComponent(pageId)}/photos`,
+    `${GRAPH_BASE}/${encodeURIComponent(pageId)}/photos`,
     { method: "POST", body: form },
   );
   const result = await parseGraphResponse(response);
-  const id = result.post_id || result.id;
+  const id = (input.published === false ? result.id : result.post_id || result.id) as string | undefined;
   if (!id) throw new Error("Meta API returned success without a photo/post ID.");
   return id;
 }
 
-function xmlEscape(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+// Backward-compatible alias used by older scripts.
+export async function publishPngToFacebook(input: {
+  png: Buffer;
+  caption: string;
+}): Promise<string> {
+  return publishPhotoToFacebook({ ...input, published: true });
 }
 
-function wrapText(value: string, maxChars: number): string[] {
-  const words = value.trim().split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
-  let line = "";
-  for (const word of words) {
-    const next = line ? `${line} ${word}` : word;
-    if (next.length > maxChars && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = next;
+export async function publishCarouselToFacebook(input: {
+  slides: Buffer[];
+  caption: string;
+}): Promise<string> {
+  if (input.slides.length < 2 || input.slides.length > 10) {
+    throw new Error("Carousel requires 2-10 slides.");
+  }
+  const { pageId, accessToken } = requiredMetaConfig();
+
+  // 1) Upload each slide as an unpublished photo.
+  const mediaIds: string[] = [];
+  for (const png of input.slides) {
+    const id = await publishPhotoToFacebook({ png, caption: "", published: false });
+    mediaIds.push(id);
+  }
+
+  // 2) Create a multi-photo feed post.
+  const body = new URLSearchParams();
+  body.set("message", input.caption);
+  body.set("access_token", accessToken);
+  mediaIds.forEach((id, i) => {
+    body.set(`attached_media[${i}]`, JSON.stringify({ media_fbid: id }));
+  });
+
+  const response = await fetch(
+    `${GRAPH_BASE}/${encodeURIComponent(pageId)}/feed`,
+    { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body },
+  );
+  const result = await parseGraphResponse(response);
+  const postId = (result.id || result.post_id) as string | undefined;
+  if (!postId) throw new Error("Meta API returned success without a carousel post ID.");
+  return postId;
+}
+
+export async function publishCommentToFacebook(input: {
+  postId: string;
+  message: string;
+}): Promise<string> {
+  const { accessToken } = requiredMetaConfig();
+  const body = new URLSearchParams({
+    message: input.message,
+    access_token: accessToken,
+  });
+  const response = await fetch(
+    `${GRAPH_BASE}/${encodeURIComponent(input.postId)}/comments`,
+    { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body },
+  );
+  const result = await parseGraphResponse(response);
+  const id = result.id as string | undefined;
+  if (!id) throw new Error("Meta API returned success without a comment ID.");
+  return id;
+}
+
+export type PostInsights = {
+  reach?: number;
+  impressions?: number;
+  reactions?: number;
+  comments?: number;
+  shares?: number;
+};
+
+export async function getPostInsights(postId: string): Promise<PostInsights> {
+  const { accessToken } = requiredMetaConfig();
+  const metrics = [
+    "post_impressions_unique",
+    "post_impressions",
+    "post_engaged_users",
+    "post_reactions_by_type_total",
+  ].join(",");
+  const url = `${GRAPH_BASE}/${encodeURIComponent(postId)}?fields=shares,comments.summary(true).limit(0),reactions.summary(true).limit(0),insights.metric(${metrics})&access_token=${encodeURIComponent(accessToken)}`;
+
+  const response = await fetch(url);
+  const body = (await response.json()) as {
+    error?: { message?: string };
+    shares?: { count?: number };
+    comments?: { summary?: { total_count?: number } };
+    reactions?: { summary?: { total_count?: number } };
+    insights?: { data?: Array<{ name: string; values?: Array<{ value?: unknown }> }> };
+  };
+  if (!response.ok || body.error) {
+    throw new Error(
+      `Meta insights failed (HTTP ${response.status}): ${body.error?.message || JSON.stringify(body)}`,
+    );
+  }
+
+  const insights: PostInsights = {};
+  const shares = body.shares?.count;
+  if (typeof shares === "number") insights.shares = shares;
+  const comments = body.comments?.summary?.total_count;
+  if (typeof comments === "number") insights.comments = comments;
+  const reactions = body.reactions?.summary?.total_count;
+  if (typeof reactions === "number") insights.reactions = reactions;
+
+  const insightData = body.insights?.data || [];
+  for (const item of insightData) {
+    const value = item.values?.[0]?.value;
+    if (item.name === "post_impressions_unique" && typeof value === "number") {
+      insights.reach = value;
+    }
+    if (item.name === "post_impressions" && typeof value === "number") {
+      insights.impressions = value;
     }
   }
-  if (line) lines.push(line);
-  return lines.slice(0, 4);
+
+  return insights;
 }
 
-export function createSocialCardSvg(input: {
-  headline: string;
-  subtitle: string;
-  category: string;
-}): string {
-  const headlineLines = wrapText(input.headline, 24);
-  const subtitleLines = wrapText(input.subtitle, 42);
-  const headlineMarkup = headlineLines
-    .map((line, index) => `<text x="88" y="${470 + index * 78}" font-size="62" font-weight="700" fill="#ffffff">${xmlEscape(line)}</text>`)
-    .join("");
-  const subtitleStart = 520 + headlineLines.length * 78;
-  const subtitleMarkup = subtitleLines
-    .map((line, index) => `<text x="92" y="${subtitleStart + index * 42}" font-size="28" fill="#cbd5e1">${xmlEscape(line)}</text>`)
-    .join("");
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0b1220"/><stop offset="100%" stop-color="#172c4a"/></linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient>
-  </defs>
-  <rect width="1200" height="1200" rx="44" fill="url(#bg)"/>
-  <circle cx="1080" cy="160" r="240" fill="#2563eb" opacity=".12"/>
-  <circle cx="1040" cy="190" r="150" fill="none" stroke="#60a5fa" stroke-width="2" opacity=".28"/>
-  <rect x="88" y="92" width="10" height="70" rx="5" fill="url(#accent)"/>
-  <text x="122" y="120" font-size="34" font-weight="700" letter-spacing="2" fill="#ffffff">NAWAB TECH</text>
-  <text x="122" y="158" font-size="18" letter-spacing="4" fill="#93c5fd">BUILD SMARTER</text>
-  <rect x="88" y="300" width="330" height="46" rx="23" fill="#1e3a5f"/>
-  <text x="110" y="331" font-size="20" font-weight="600" letter-spacing="1.5" fill="#93c5fd">${xmlEscape(input.category.toUpperCase().slice(0, 42))}</text>
-  ${headlineMarkup}
-  ${subtitleMarkup}
-  <rect x="88" y="1000" width="1024" height="2" fill="#334155"/>
-  <text x="88" y="1060" font-size="25" font-weight="600" fill="#ffffff">Practical digital solutions for growing businesses.</text>
-  <text x="88" y="1110" font-size="22" fill="#93c5fd">nawab-tech.vercel.app</text>
-  <text x="1110" y="1110" text-anchor="end" font-size="18" fill="#94a3b8">WEBSITES • APPS • AUTOMATION</text>
-</svg>`;
-}
-
-export function renderSvgToPng(svg: string): Buffer {
-  // ImageMagick is installed by the independent Facebook workflow.
-  return execFileSync("convert", ["-background", "#0b1220", "svg:-", "png:-"], {
-    input: svg,
-    maxBuffer: 20 * 1024 * 1024,
+export async function publishReelToFacebook(input: {
+  video: Buffer;
+  description: string;
+}): Promise<string> {
+  const { pageId, accessToken } = requiredMetaConfig();
+  // Reels publishing uses the video endpoint. Keep behind ENABLE_REELS flag in caller.
+  // Step 1: start upload session
+  const startBody = new URLSearchParams({
+    upload_phase: "start",
+    access_token: accessToken,
   });
+  const startRes = await fetch(`${GRAPH_BASE}/${encodeURIComponent(pageId)}/video_reels`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: startBody,
+  });
+  const start = await parseGraphResponse(startRes);
+  const videoId = start.video_id as string | undefined;
+  const uploadUrl = start.upload_url as string | undefined;
+  if (!videoId || !uploadUrl) throw new Error("Reels start phase did not return video_id/upload_url.");
+
+  // Step 2: upload binary
+  const uploadRes = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `OAuth ${accessToken}`,
+      offset: "0",
+      file_size: String(input.video.length),
+      "Content-Type": "application/octet-stream",
+    },
+    body: new Uint8Array(input.video),
+  });
+  if (!uploadRes.ok) {
+    const t = await uploadRes.text();
+    throw new Error(`Reels upload failed (HTTP ${uploadRes.status}): ${t}`);
+  }
+
+  // Step 3: publish
+  const finishBody = new URLSearchParams({
+    upload_phase: "finish",
+    video_id: videoId,
+    video_state: "PUBLISHED",
+    description: input.description,
+    access_token: accessToken,
+  });
+  const finishRes = await fetch(`${GRAPH_BASE}/${encodeURIComponent(pageId)}/video_reels`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: finishBody,
+  });
+  const finish = await parseGraphResponse(finishRes);
+  if (!finish.success && !finish.id) {
+    throw new Error("Reels finish phase did not confirm success.");
+  }
+  return videoId;
 }
