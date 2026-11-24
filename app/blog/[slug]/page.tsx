@@ -129,7 +129,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   <span>{post.readingTime} min read</span>
                 </div>
 
-                <h1 className="display-text mt-8 max-w-6xl">{post.title}</h1>
+                <h1 className="article-title mt-8 max-w-6xl">{post.title}</h1>
 
                 <p
                   data-reveal="up"
@@ -190,7 +190,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   </aside>
 
                   {/* Main content column */}
-                  <main className="lg:col-span-3 mx-auto max-w-3xl px-6 py-16 sm:px-10 sm:py-20 lg:py-24">
+                  <div className="lg:col-span-3 mx-auto w-full min-w-0 max-w-3xl px-6 py-16 sm:px-10 sm:py-20 lg:py-24">
                     {/* Top leaderboard — responsive size, only one mounts */}
                     <div className="mb-10 flex justify-center">
                       <AdsterraLeaderboard />
@@ -202,7 +202,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                       <AdsterraBanner variant="300x250" />
                       <AdsterraBanner variant="300x250" />
                     </div>
-                  </main>
+                  </div>
 
                   {/* Right sidebar - appears on large screens only */}
                   <aside className="hidden lg:flex lg:col-span-1 sticky top-24 min-w-40 flex-col items-center gap-6">

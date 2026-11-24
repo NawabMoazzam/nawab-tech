@@ -184,6 +184,7 @@
     font-family: var(--font-sans), Arial, Helvetica, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
   }
 
   /* The ambient backdrop now lives in <SiteBackground />. */
@@ -191,6 +192,7 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   ::selection {
@@ -222,6 +224,14 @@
 
   .display-text {
     @apply text-[clamp(3.5rem,9vw,9rem)] font-medium leading-[0.85] tracking-[-0.08em];
+  }
+
+  .article-title {
+    font-size: clamp(2.25rem, 7vw, 6rem);
+    font-weight: 500;
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+    overflow-wrap: anywhere;
   }
 
   .eyebrow {

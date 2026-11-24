@@ -4,6 +4,8 @@ import { getAllPublishedPosts } from "@/lib/blog/queries";
 import { getAllCategoriesFromDB } from "@/lib/categories";
 import { siteConfig } from "@/lib/site";
 
+export const revalidate = 3600;
+
 const siteUrl = siteConfig.url;
 
 const serviceRoutes = [
@@ -46,7 +48,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  let blogPosts: { url: string; priority: number; images?: string[] }[] = [];
+  let blogPosts: {
+    url: string;
+    priority: number;
+    lastModified: Date;
+  }[] = [];
   let blogCategories: { url: string; priority: number }[] = [];
   try {
     const [posts, categories] = await Promise.all([
@@ -56,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     blogPosts = posts.map((post) => ({
       url: `${siteConfig.url}/blog/${post.slug}`,
       priority: post.featured ? 0.8 : 0.7,
-      images: post.coverImage ? [post.coverImage] : undefined,
+      lastModified: new Date(post.updatedAt || post.publishedAt),
     }));
     blogCategories = categories.map((category) => ({
       url: `${siteConfig.url}/blog/category/${category.slug}`,
@@ -66,11 +72,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Keep static routes available during builds without a database.
   }
 
-  return [...staticRoutes, ...services, ...blogCategories, ...blogPosts].map(
-    (route) => ({
+  return [
+    ...staticRoutes.map((route) => ({
       ...route,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
-    }),
-  );
+    })),
+    ...services.map((route) => ({
+      ...route,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+    })),
+    ...blogCategories.map((route) => ({
+      ...route,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+    })),
+    ...blogPosts.map((route) => ({
+      ...route,
+      changeFrequency: "monthly" as const,
+    })),
+  ];
 }

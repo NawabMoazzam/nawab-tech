@@ -35,14 +35,19 @@ export async function GET(request: NextRequest) {
 
   revalidatePath("/");
   revalidatePath("/blog");
+  revalidatePath("/sitemap.xml");
   if (slug) revalidatePath(`/blog/${slug}`);
   if (category) revalidatePath(`/blog/category/${category}`);
 
   return NextResponse.json({
     success: true,
-    revalidated: ["/", "/blog", slug ? `/blog/${slug}` : null, category ? `/blog/category/${category}` : null].filter(
-      Boolean,
-    ),
+    revalidated: [
+      "/",
+      "/blog",
+      "/sitemap.xml",
+      slug ? `/blog/${slug}` : null,
+      category ? `/blog/category/${category}` : null,
+    ].filter(Boolean),
   });
 }
 
