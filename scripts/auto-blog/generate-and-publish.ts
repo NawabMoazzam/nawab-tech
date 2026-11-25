@@ -18,8 +18,8 @@
  *      stores that URL on the post, so automated covers use no ImageKit
  *      storage. Set AUTO_BLOG_UPLOAD_COVER=true to copy the photo into
  *      ImageKit instead (older behaviour).
- *   4. Inserts the finished post directly into MongoDB with
- *      status: "published".
+ *   4. Saves the finished post as a draft by default; AUTO_PUBLISH=true keeps
+ *      the previous immediate-publishing behavior.
  *   5. Pings the site's /api/revalidate endpoint so the new post shows up
  *      immediately instead of waiting for the hourly ISR refresh.
  *
@@ -39,6 +39,7 @@
  *   GEMINI_MODELS - comma-separated custom model chain (prepended to defaults)
  *   NEXT_PUBLIC_BASE_URL / BETTER_AUTH_URL - used to call /api/revalidate
  *   BLOG_REVALIDATE_SECRET - shared secret for /api/revalidate
+ *   AUTO_PUBLISH=true - publish immediately; default is draft
  *   DRY_RUN=true - do everything except writing to MongoDB (safe test run)
  */
 
@@ -50,6 +51,8 @@ dotenv.config({ path: ".env.local" });
 dotenv.config({ path: ".env" });
 
 import { slugify } from "../../lib/slugify";
+import { contentStrategy } from "../../lib/content-strategy";
+import { siteConfig } from "../../lib/site";
 
 function sanitizeGeminiApiKey(value: string | undefined): string | undefined {
   let key = value?.trim() ?? "";
@@ -66,7 +69,8 @@ const IMAGEKIT_PUBLIC_KEY = process.env.IMAGEKIT_PUBLIC_KEY;
 const IMAGEKIT_PRIVATE_KEY = process.env.IMAGEKIT_PRIVATE_KEY;
 const IMAGEKIT_URL_ENDPOINT = process.env.IMAGEKIT_URL_ENDPOINT;
 const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL || process.env.BETTER_AUTH_URL || "";
+  process.env.NEXT_PUBLIC_BASE_URL || process.env.BETTER_AUTH_URL || siteConfig.url;
+const AUTO_PUBLISH = process.env.AUTO_PUBLISH === "true";
 const REVALIDATE_SECRET = process.env.BLOG_REVALIDATE_SECRET;
 const DRY_RUN = process.env.DRY_RUN === "true";
 /**
@@ -317,41 +321,8 @@ async function preflightGeminiApiKey(): Promise<void> {
   );
 }
 
-// Categories the site already understands (matches app/services/* and the
-// contact form's service enum). The AI picks one of these per post.
-const CATEGORIES = [
-  {
-    name: "Web Development",
-    slug: "web-development",
-    servicePath: "/services/web-development",
-    description: "Websites, performance, SEO, design, and digital presence.",
-  },
-  {
-    name: "Business Websites",
-    slug: "business-websites",
-    servicePath: "/services/web-development",
-    description: "Guidance for small and medium businesses building a website.",
-  },
-  {
-    name: "Custom Web Applications",
-    slug: "custom-web-applications",
-    servicePath: "/services/custom-web-applications",
-    description: "Purpose-built software that replaces manual workflows.",
-  },
-  {
-    name: "Dashboard Development",
-    slug: "dashboard-development",
-    servicePath: "/services/dashboard-development",
-    description:
-      "Dashboards, internal tools, and data visibility for businesses.",
-  },
-  {
-    name: "Automation & Integrations",
-    slug: "automation-integrations",
-    servicePath: "/services/automation-integrations",
-    description: "AI automation, integrations, and workflow tooling.",
-  },
-] as const;
+// Category definitions and allowed editorial categories come from the shared niche config.
+const CATEGORIES = contentStrategy.allowedCategories;
 
 type RawGeneratedPost = {
   title?: unknown;
@@ -365,6 +336,7 @@ type RawGeneratedPost = {
   seoTitle?: unknown;
   seoDescription?: unknown;
   seoKeywords?: unknown;
+  originalityPrompts?: unknown;
 };
 
 type GeneratedPost = {
@@ -379,6 +351,7 @@ type GeneratedPost = {
   seoTitle: string;
   seoDescription: string;
   seoKeywords: string[];
+  originalityPrompts: string[];
   modelUsed: string;
 };
 
@@ -468,6 +441,7 @@ function validateAndNormalizeGeneratedPost(
   raw: RawGeneratedPost,
   recentTitles: string[],
   modelId: string,
+  existingFocusKeywords: string[] = [],
 ): GeneratedPost {
   if (!raw || typeof raw !== "object") {
     throw new Error("Parsed response is not a JSON object.");
@@ -480,13 +454,17 @@ function validateAndNormalizeGeneratedPost(
     );
   }
 
-  const normalizedTitleLower = title.toLowerCase();
-  if (
-    recentTitles.some(
-      (recent) => recent.trim().toLowerCase() === normalizedTitleLower,
-    )
-  ) {
-    throw new Error(`Generated title duplicates a recent post: "${title}".`);
+  const titleTokens = (value: string) => new Set(
+    value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((token) => token.length > 2),
+  );
+  const generatedTokens = titleTokens(title);
+  for (const recent of recentTitles) {
+    const priorTokens = titleTokens(recent);
+    const union = new Set([...generatedTokens, ...priorTokens]);
+    const intersection = [...generatedTokens].filter((token) => priorTokens.has(token)).length;
+    if (union.size > 0 && intersection / union.size > 0.5) {
+      throw new Error(`Generated title is too similar to an existing post: "${recent}".`);
+    }
   }
 
   const rawExcerpt =
@@ -509,10 +487,45 @@ function validateAndNormalizeGeneratedPost(
   );
 
   const wordCount = countWords(content);
-  if (wordCount < 550) {
-    throw new Error(
-      `Article content is too short (${wordCount} words). Minimum required is 550 words for SEO depth.`,
-    );
+  if (wordCount < 1100) {
+    throw new Error(`Article content is too short (${wordCount} words). Minimum required is 1100.`);
+  }
+
+  const banned = contentStrategy.bannedPhrases.find((phrase) =>
+    `${title} ${content}`.toLowerCase().includes(phrase.toLowerCase()),
+  );
+  if (banned) throw new Error(`Banned filler phrase found: "${banned}".`);
+  if (
+    /\$[^\n$]+\$/.test(content) ||
+    /\\(?:\(|\[|begin\{|frac\b|sqrt\b|sum\b|int\b)/.test(content)
+  ) {
+    throw new Error("LaTeX and math markup are not allowed; use plain text.");
+  }
+  if (!/##\s+What I would do\b/i.test(content)) {
+    throw new Error('Article needs a first-person "What I would do" section.');
+  }
+  if (!/(worked example|example:|for example)[\s\S]{0,700}(assumption|assume|assuming)/i.test(content)) {
+    throw new Error("Include a concrete worked example with stated assumptions.");
+  }
+  if (!/^\|.+\|$/m.test(content) && !/^[-*] \[ \] /m.test(content) && !/^[-*] \[[xX ]\] /m.test(content)) {
+    throw new Error("Include at least one checklist or a Markdown table.");
+  }
+  for (const line of content.split("\n")) {
+    const trimmedLine = line.trim();
+    if (trimmedLine.startsWith("|") && trimmedLine.endsWith("|")) {
+      const columnCount = trimmedLine.slice(1, -1).split("|").length;
+      if (columnCount > 3) {
+        throw new Error("Markdown tables may have no more than 3 columns.");
+      }
+    }
+  }
+  const faqHeadingIndex = content.search(/^##\s+Frequently Asked Questions\s*$/im);
+  if (faqHeadingIndex < 0 || !/^###\s+.+\?/m.test(content.slice(faqHeadingIndex))) {
+    throw new Error("Include an FAQ section with question headings.");
+  }
+  const internalLinks = [...content.matchAll(/\]\((\/(?:services|contact|about|faq|blog)[^\s)]*)\)/gi)];
+  if (internalLinks.length < 2 || internalLinks.length > 3) {
+    throw new Error(`Include 2-3 internal links (found ${internalLinks.length}).`);
   }
 
   const h2Matches = content.match(/^##\s+.+/gm) || [];
@@ -524,23 +537,18 @@ function validateAndNormalizeGeneratedPost(
 
   const categoryName =
     typeof raw.category === "string" ? raw.category.trim() : "";
-  const matchedCategory =
-    CATEGORIES.find(
-      (c) => c.name.toLowerCase() === categoryName.toLowerCase(),
-    ) || CATEGORIES[0];
-
-  // Ensure the article contains at least one internal link to Nawab Tech's
-  // core service/contact pages for internal link equity and conversion.
-  const hasInternalLink =
-    /\]\((\/(services|contact|about|faq|blog)[^\s)]*)\)/i.test(content);
-  if (!hasInternalLink) {
-    content = `${content}\n\n---\n\nReady to put these ideas into practice? Explore our [${matchedCategory.name} services](${matchedCategory.servicePath}) or [get in touch with Nawab Tech](/contact) to discuss your project.`;
-  }
+  const matchedCategory = CATEGORIES.find(
+    (category) => category.name.toLowerCase() === categoryName.toLowerCase(),
+  );
+  if (!matchedCategory) throw new Error(`Category is not allowed: "${categoryName}".`);
 
   const focusKeyword =
     typeof raw.focusKeyword === "string" && raw.focusKeyword.trim().length >= 3
       ? raw.focusKeyword.trim().toLowerCase()
       : matchedCategory.name.toLowerCase();
+  if (existingFocusKeywords.some((keyword) => keyword.trim().toLowerCase() === focusKeyword)) {
+    throw new Error(`Focus keyword already exists: "${focusKeyword}".`);
+  }
 
   const rawTags = Array.isArray(raw.tags)
     ? raw.tags
@@ -581,6 +589,13 @@ function validateAndNormalizeGeneratedPost(
     excerpt,
   );
 
+  const originalityPrompts = Array.isArray(raw.originalityPrompts)
+    ? raw.originalityPrompts.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean).slice(0, 3)
+    : [];
+  if (originalityPrompts.length !== 3) {
+    throw new Error("Return exactly three originality prompts for the author.");
+  }
+
   const imageSearchQuery =
     typeof raw.imageSearchQuery === "string" &&
     raw.imageSearchQuery.trim().length >= 3
@@ -599,13 +614,14 @@ function validateAndNormalizeGeneratedPost(
     seoTitle,
     seoDescription,
     seoKeywords,
+    originalityPrompts,
     modelUsed: modelId,
   };
 }
 
 function buildSeoPrompt(
   recentTitles: string[],
-  suggestedCategoryName: string,
+  topic: { query: string; intent: string; originalAngle: string; proofElement: string },
 ): {
   systemInstruction: string;
   userPrompt: string;
@@ -613,20 +629,23 @@ function buildSeoPrompt(
 } {
   const categoryNames = CATEGORIES.map((c) => c.name);
 
-  const systemInstruction = `You are the Principal Technical Content Strategist and Ghostwriter for "Nawab Tech" (https://nawabtech.com), a premier software engineering agency specializing in high-performing business websites, custom web applications, executive dashboards, and AI/workflow automation.
-
-Your job is to write authoritative, deeply practical, conversion-aware, and search-engine-optimized (SEO) articles for founders, CTOs, operations leaders, and business owners.`;
+  const systemInstruction = `You are the practical editorial writer for ${siteConfig.name} (${siteConfig.url}). Niche: ${contentStrategy.niche}. Audience: ${contentStrategy.audience} Tone: ${contentStrategy.tone}`;
 
   const userPrompt = `Write ONE brand-new, original, high-ranking blog article for the Nawab Tech Insights blog.
 
 ### 1. Topic & Category Selection
 - Available categories: ${categoryNames.join(", ")}.
-- Preferred category for today's rotation (unless you have an exceptional high-intent angle in another category): "${suggestedCategoryName}".
+- Approved buyer query: "${topic.query}". Search intent: ${topic.intent}.
+- Required original angle: ${topic.originalAngle}
+- Include this proof element honestly (state assumptions where needed; do not fabricate client results): ${topic.proofElement}
 - Do NOT reuse or closely paraphrase any of these recently published titles:
   ${recentTitles.length ? recentTitles.map((t) => `• ${t}`).join("\n  ") : "• (none yet)"}
-- Choose a high-intent commercial or informational topic that real decision-makers search for on Google (e.g., build-vs-buy trade-offs, cost & ROI breakdowns, architecture pitfalls, operational bottlenecks solved by custom web apps/dashboards/automation, performance & Core Web Vitals impact on revenue).
+- Stay tightly on the approved query and practical small-business buyer needs. Do not invent search volumes, market research, client stories, or measured outcomes.
 
 ### 2. On-Page SEO & E-E-A-T Best Practices
+- Write in ${contentStrategy.language} for this audience: ${contentStrategy.audience}
+- Use this tone: ${contentStrategy.tone}
+- Never use these phrases: ${contentStrategy.bannedPhrases.join(", ")}
 - **Focus Keyword**: Identify a primary long-tail search query (3-5 words) with clear business intent.
 - **Title (H1)**: Compelling, specific, human-first headline (50-75 characters ideal) that naturally incorporates the primary keyword or core concept.
 - **SEO Title (meta title)**: 45-60 characters, front-loading the focus keyword for search results. Do NOT append "| Nawab Tech" (the site template appends it automatically).
@@ -635,19 +654,23 @@ Your job is to write authoritative, deeply practical, conversion-aware, and sear
 - **Heading Hierarchy**:
   - Do NOT start \`content\` with a \`# Title\` H1 heading (the page template already renders the H1).
   - Structure the body with clear, keyword-informed \`## \` (H2) section headings and \`### \` (H3) subheadings.
-- **Content Depth & Formatting (850-1250 words)**:
+- **Content Depth & Formatting (1100-1500 words)**:
   - Open with a sharp hook addressing the reader's exact business pain point and previewing the actionable outcome within the first 100 words.
   - Provide concrete numbers, realistic implementation ranges, architectural comparisons, checklists, or step-by-step frameworks—never generic AI fluff.
   - Use short paragraphs (2-4 sentences), bulleted/numbered lists, bold key takeaways, and a comparison table or structured checklist where helpful.
+  - Include a first-person ## What I would do section.
+  - Include one concrete worked example and explicitly state its assumptions.
+  - Include one useful checklist or a table with no more than 3 columns.
   - Include a concise **"Frequently Asked Questions"** section (\`## Frequently Asked Questions\`) near the end with 3 specific Q&As (\`### Question?\`) targeting "People Also Ask" long-tail queries.
 - **Internal Linking (Required)**:
-  - Naturally weave 2-3 contextual Markdown links into the body pointing to Nawab Tech's real pages using relative paths:
+  - Naturally weave exactly 2-3 contextual Markdown links into the body pointing to real pages using relative paths:
     - \`/services/web-development\` (Web Development & Business Websites)
     - \`/services/custom-web-applications\` (Custom Web Applications)
     - \`/services/dashboard-development\` (Dashboard Development & Internal Tools)
     - \`/services/automation-integrations\` (AI Automation & API Integrations)
     - \`/services\` (All Services)
     - \`/contact\` (Start a Project / Consultation)
+- **Originality prompts**: Return exactly three specific questions for the human author to answer before publication. At least one should request a real project number, decision, or firsthand observation. These are editorial prompts, not article content.
 - **Cover Image Search Query**:
   - Provide a 2-4 word English stock-photo search phrase for Pexels (e.g., "software team analytics dashboard", "modern office developer laptop").
 - **Formatting constraints (strict)**:
@@ -708,6 +731,11 @@ Your job is to write authoritative, deeply practical, conversion-aware, and sear
         type: "string",
         enum: categoryNames,
       },
+      originalityPrompts: {
+        type: "array",
+        items: { type: "string" },
+        description: "Exactly three specific questions the author must answer before publication.",
+      },
       imageSearchQuery: {
         type: "string",
         description:
@@ -726,6 +754,7 @@ Your job is to write authoritative, deeply practical, conversion-aware, and sear
       "tags",
       "category",
       "imageSearchQuery",
+      "originalityPrompts",
     ],
   };
 
@@ -835,6 +864,7 @@ async function callGeminiModelOnce(
   },
   recentTitles: string[],
   timeoutMs = model.timeoutMs,
+  existingFocusKeywords: string[] = [],
 ): Promise<GeneratedPost> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
     model.id,
@@ -937,7 +967,7 @@ async function callGeminiModelOnce(
     );
   }
 
-  return validateAndNormalizeGeneratedPost(parsed, recentTitles, model.id);
+  return validateAndNormalizeGeneratedPost(parsed, recentTitles, model.id, existingFocusKeywords);
 }
 
 /**
@@ -946,10 +976,11 @@ async function callGeminiModelOnce(
  */
 async function generatePostWithGeminiFallbackChain(
   recentTitles: string[],
-  suggestedCategoryName: string,
+  topic: { query: string; intent: string; originalAngle: string; proofElement: string },
+  existingFocusKeywords: string[] = [],
 ): Promise<GeneratedPost> {
   const chain = buildGeminiModelChain();
-  const promptPayload = buildSeoPrompt(recentTitles, suggestedCategoryName);
+  const promptPayload = buildSeoPrompt(recentTitles, topic);
   const failures: Array<{ model: string; error: string }> = [];
   const deadline = Date.now() + GEMINI_CHAIN_BUDGET_MS;
   let budgetExceeded = false;
@@ -988,6 +1019,7 @@ async function generatePostWithGeminiFallbackChain(
           promptPayload,
           recentTitles,
           Math.min(model.timeoutMs, remainingMs),
+          existingFocusKeywords,
         );
 
         console.log(
@@ -1159,24 +1191,30 @@ async function main() {
   const posts = db.collection("blogposts");
   const categories = db.collection("categories");
 
-  // Give the AI context on recent titles so it doesn't repeat topics day after day.
-  const recent = await posts
-    .find({}, { projection: { title: 1 } })
-    .sort({ createdAt: -1 })
-    .limit(30)
-    .toArray();
-  const recentTitles = recent.map((p) => String(p.title));
+  // Pick the next approved backlog idea in stable order; do not invent query-volume data.
+  const ideas = db.collection("topicideas");
+  const topic = await ideas.findOne({ status: "approved" }, { sort: { createdAt: 1, _id: 1 } });
+  if (!topic) throw new Error("No approved topic ideas remain. Seed or approve ideas in the topicideas collection.");
 
-  // Rotate suggested category daily across the 5 service pillars for balanced topical authority.
-  const dayIndex = Math.floor(Date.now() / 86_400_000) % CATEGORIES.length;
-  const suggestedCategoryName = CATEGORIES[dayIndex].name;
+  const existing = await posts.find({}, { projection: { title: 1, focusKeyword: 1, tags: 1, seo: 1 } }).toArray();
+  const recentTitles = existing.map((post) => String(post.title || ""));
+  const existingFocusKeywords = existing.flatMap((post) => {
+    const direct = typeof post.focusKeyword === "string" ? [post.focusKeyword] : [];
+    const legacy = Array.isArray(post.seo?.keywords) ? post.seo.keywords.slice(0, 1) : [];
+    return [...direct, ...legacy].filter((value): value is string => typeof value === "string");
+  });
+  const generationTopic = {
+    query: String(topic.query),
+    intent: String(topic.intent),
+    originalAngle: String(topic.originalAngle),
+    proofElement: String(topic.proofElement),
+  };
 
-  console.log(
-    `[auto-blog] Requesting new SEO article (suggested category: "${suggestedCategoryName}")...`,
-  );
+  console.log(`[auto-blog] Generating from approved topic: "${generationTopic.query}"...`);
   const generated = await generatePostWithGeminiFallbackChain(
     recentTitles,
-    suggestedCategoryName,
+    generationTopic,
+    existingFocusKeywords,
   );
   console.log(
     `[auto-blog] Generated "${generated.title}" [${generated.category}] via ${generated.modelUsed} (focus keyword: "${generated.focusKeyword}", ${countWords(generated.content)} words)`,
@@ -1235,13 +1273,19 @@ async function main() {
     category: category._id,
     tags: generated.tags,
     author: {
-      name: "Nawab Tech",
-      role: "Web Development & Digital Products",
+      name: siteConfig.author.name,
+      role: siteConfig.author.role,
+      url: siteConfig.author.url,
     },
+    focusKeyword: generated.focusKeyword,
+    originalityPrompts: generated.originalityPrompts,
+    originalityAnswers: ["", "", ""],
+    noindex: false,
+    redirectTo: "",
     coverImage,
     coverImageFileId,
     coverImageSource,
-    status: "published" as const,
+    status: (AUTO_PUBLISH ? "published" : "draft") as "published" | "draft",
     featured: false,
     readingTime,
     views: 0,
@@ -1262,7 +1306,6 @@ async function main() {
       JSON.stringify(
         {
           modelUsed: generated.modelUsed,
-          focusKeyword: generated.focusKeyword,
           ...doc,
           content: `${doc.content.slice(0, 250)}...`,
         },
@@ -1271,12 +1314,11 @@ async function main() {
       ),
     );
   } else {
-    await posts.insertOne(doc);
-    console.log(
-      `[auto-blog] Published: /blog/${slug} (generated by ${generated.modelUsed})`,
-    );
+    const inserted = await posts.insertOne(doc);
+    await ideas.updateOne({ _id: topic._id, status: "approved" }, { $set: { status: "drafted", postId: inserted.insertedId, updatedAt: now } });
+    console.log(`[auto-blog] Saved ${AUTO_PUBLISH ? "published post" : "draft"}: /blog/${slug} (generated by ${generated.modelUsed})`);
 
-    if (BASE_URL && REVALIDATE_SECRET) {
+    if (AUTO_PUBLISH && BASE_URL && REVALIDATE_SECRET) {
       try {
         const revalidateUrl = `${BASE_URL.replace(
           /\/$/,
@@ -1291,10 +1333,8 @@ async function main() {
       } catch (error) {
         console.warn("[auto-blog] Revalidate call failed (non-fatal):", error);
       }
-    } else {
-      console.warn(
-        "[auto-blog] WARNING: Skipping revalidate call because BASE_URL/NEXT_PUBLIC_BASE_URL or BLOG_REVALIDATE_SECRET is not set. The published post will not be revalidated immediately and may take up to an hour to appear via ISR.",
-      );
+    } else if (AUTO_PUBLISH) {
+      console.warn("[auto-blog] Skipping revalidation because base URL or secret is missing.");
     }
   }
 

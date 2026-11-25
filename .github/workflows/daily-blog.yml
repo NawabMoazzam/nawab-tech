@@ -2,8 +2,8 @@ name: Daily auto blog post
 
 on:
   schedule:
-    # 08:00 Asia/Karachi (PKT, UTC+5) = 03:00 UTC
-    - cron: "0 3 * * *"
+    # 08:00 Asia/Karachi (PKT, UTC+5) = 03:00 UTC; Monday, Wednesday, Friday
+    - cron: "0 3 * * 1,3,5"
   workflow_dispatch: {}
 
 concurrency:
@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish:
+  generate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate and publish today's blog post
+      - name: Generate a blog draft (publish only when AUTO_PUBLISH=true)
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -37,6 +37,7 @@ jobs:
           IMAGEKIT_URL_ENDPOINT: ${{ secrets.IMAGEKIT_URL_ENDPOINT }}
           NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
           BLOG_REVALIDATE_SECRET: ${{ secrets.BLOG_REVALIDATE_SECRET }}
+          AUTO_PUBLISH: ${{ vars.AUTO_PUBLISH }}
         run: npm run auto-blog
 
       - name: Share latest blog post on Facebook Page

@@ -15,6 +15,11 @@ export type ValidPostInput = {
   coverImageSource: "upload" | "external";
   status: "draft" | "published";
   featured: boolean;
+  focusKeyword: string;
+  originalityPrompts: string[];
+  originalityAnswers: string[];
+  noindex: boolean;
+  redirectTo: string;
   seo: {
     title: string;
     description: string;
@@ -81,6 +86,14 @@ export function validatePostInput(input: unknown): PostValidationResult {
     return { success: false, error: "Select a valid category." };
   }
 
+  const originalityPrompts = stringList(value.originalityPrompts).slice(0, 3);
+  const originalityAnswers = Array.isArray(value.originalityAnswers)
+    ? value.originalityAnswers.slice(0, 3).map((answer) => stringValue(answer))
+    : [];
+  if (status === "published" && originalityPrompts.length > 0 && originalityPrompts.some((_, index) => !originalityAnswers[index])) {
+    return { success: false, error: "Answer all originality prompts before publishing this draft." };
+  }
+
   const coverImage = stringValue(value.coverImage);
   const coverImageSource = inferCoverImageSource({
     coverImage,
@@ -115,6 +128,11 @@ export function validatePostInput(input: unknown): PostValidationResult {
       coverImageSource,
       status,
       featured: value.featured === true,
+      focusKeyword: stringValue(value.focusKeyword).toLowerCase(),
+      originalityPrompts,
+      originalityAnswers,
+      noindex: value.noindex === true,
+      redirectTo: stringValue(value.redirectTo),
       seo: {
         title: stringValue(seoValue.title),
         description: stringValue(seoValue.description) || excerpt,

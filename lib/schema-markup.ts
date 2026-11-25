@@ -79,18 +79,12 @@ export const breadcrumbSchema: WithContext<BreadcrumbList> = {
 export const personSchema: WithContext<Person> = {
   "@context": "https://schema.org",
   "@type": "Person",
-  name: "Moazzam Nawab",
-  url: `${siteUrl}/about`,
+  name: siteConfig.author.name,
+  url: siteConfig.author.url,
   image: `${siteUrl}/profile.jpg`,
-  sameAs: [
-    "https://www.facebook.com/moazzam.nawab.dev",
-    siteConfig.social.github,
-  ],
-  jobTitle: "Founder & Developer",
-  worksFor: {
-    "@type": "Organization",
-    name: "Nawab Tech",
-  },
+  sameAs: [...siteConfig.author.sameAs],
+  jobTitle: siteConfig.author.role,
+  worksFor: { "@type": "Organization", name: siteConfig.name },
 };
 
 export const faqSchema = (faqs: { question: string; answer: string }[]) =>
@@ -124,8 +118,10 @@ export const articleSchema = (post: BlogPost) =>
     ),
     author: {
       "@type": "Person",
-      name: post.author?.name || "Nawab Tech",
-      url: `${siteConfig.url}/about`,
+      name: post.author?.name || siteConfig.author.name,
+      url: post.author?.url || siteConfig.author.url,
+      sameAs: [...siteConfig.author.sameAs],
+      jobTitle: post.author?.role || siteConfig.author.role,
     },
     publisher: {
       "@type": "Organization",

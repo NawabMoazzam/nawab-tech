@@ -10,6 +10,8 @@
     "seed:admin": "tsx scripts/seed-admin.ts",
     "migrate:categories": "tsx scripts/migrate-categories.ts",
     "auto-blog": "tsx scripts/auto-blog/generate-and-publish.ts",
+    "seed:topics": "tsx scripts/seed-topics.ts",
+    "audit:blog": "tsx scripts/audit-blog.ts",
     "facebook-blog": "tsx scripts/social/publish-latest-blog.ts",
     "facebook-content": "tsx scripts/social/generate-independent-post.ts",
     "facebook-insights": "tsx scripts/social/collect-insights.ts"

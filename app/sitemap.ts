@@ -41,6 +41,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${siteConfig.url}/faq`,
       priority: 0.8,
     },
+    {
+      url: `${siteConfig.url}/tools/website-cost-calculator`,
+      priority: 0.8,
+    },
   ];
 
   const services = serviceRoutes.map((service) => ({

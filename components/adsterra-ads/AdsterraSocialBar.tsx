@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 
 interface Props {
   id?: string;
@@ -17,6 +18,9 @@ export default function AdsterraSocialBar({
   loadOnVisible = false,
   consent = true,
 }: Props) {
+  const pathname = usePathname();
+  const adsEnabled = process.env.NEXT_PUBLIC_ADS_ENABLED !== "false";
+  const excludedPath = pathname === "/about" || pathname === "/contact" || pathname.startsWith("/services");
   const containerRef = useRef<HTMLDivElement | null>(null);
   // Compute whether the script already exists synchronously at render
   const existsAtRender =
@@ -24,13 +28,13 @@ export default function AdsterraSocialBar({
 
   // Initialize shouldLoad without needing to set state inside an effect
   const [shouldLoad, setShouldLoad] = useState(() => {
-    if (!consent) return false;
+    if (!consent || !adsEnabled || excludedPath) return false;
     if (!loadOnVisible) return !existsAtRender;
     return false;
   });
 
   useEffect(() => {
-    if (!loadOnVisible || !consent) return;
+    if (!loadOnVisible || !consent || !adsEnabled || excludedPath) return;
 
     // If script already injected, don't attempt to observe or load
     if (existsAtRender) return;
@@ -50,7 +54,7 @@ export default function AdsterraSocialBar({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadOnVisible, consent, id]);
+  }, [loadOnVisible, consent, id, adsEnabled, excludedPath, existsAtRender]);
 
   // Check current existence again before rendering the <Script />
   const exists =
@@ -58,7 +62,7 @@ export default function AdsterraSocialBar({
 
   return (
     <div ref={containerRef} aria-hidden>
-      {shouldLoad && consent && !exists ? (
+      {shouldLoad && consent && adsEnabled && !excludedPath && !exists ? (
         <Script
           id={id}
           src="https://recallscarce.com/4d/ac/8c/4dac8c463d5f01a352b8b669a8173c88.js"

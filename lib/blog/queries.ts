@@ -3,6 +3,7 @@ import BlogPostModel from "@/models/blog-post";
 import Category from "@/models/category";
 import { inferCoverImageSource } from "@/lib/cover-image";
 import type { BlogPost } from "./types";
+import { siteConfig } from "@/lib/site";
 
 // Build-time fallback used only when no database is configured.
 const fallbackPosts: BlogPost[] = [
@@ -18,8 +19,9 @@ const fallbackPosts: BlogPost[] = [
     },
     tags: ["web development", "business websites", "website cost"],
     author: {
-      name: "Nawab Tech",
-      role: "Web Development & Digital Products",
+      name: siteConfig.author.name,
+      role: siteConfig.author.role,
+      url: siteConfig.author.url,
     },
     publishedAt: "2026-07-28",
     readingTime: 5,
@@ -57,6 +59,11 @@ type DbPostRecord = {
   seo?: BlogPost["seo"];
   content?: string;
   status?: "draft" | "published";
+  focusKeyword?: string;
+  originalityPrompts?: string[];
+  originalityAnswers?: string[];
+  noindex?: boolean;
+  redirectTo?: string;
 };
 
 function mapDbPostToType(value: unknown): BlogPost | null {
@@ -88,6 +95,7 @@ function mapDbPostToType(value: unknown): BlogPost | null {
     author: dbPost.author || {
       name: "Nawab Tech",
       role: "Web Development",
+      url: "",
     },
     publishedAt: new Date(dbPost.publishedAt).toISOString().split("T")[0],
     updatedAt: dbPost.updatedAt
@@ -105,6 +113,11 @@ function mapDbPostToType(value: unknown): BlogPost | null {
     },
     content: dbPost.content,
     status: dbPost.status,
+    focusKeyword: dbPost.focusKeyword || "",
+    originalityPrompts: dbPost.originalityPrompts || [],
+    originalityAnswers: dbPost.originalityAnswers || [],
+    noindex: dbPost.noindex || false,
+    redirectTo: dbPost.redirectTo || "",
     _id: dbPost._id?.toString(),
   };
 }
@@ -130,7 +143,7 @@ export async function getAllPublishedPosts(): Promise<BlogPost[]> {
 
   try {
     await connectDB();
-    const posts = await BlogPostModel.find({ status: "published" })
+    const posts = await BlogPostModel.find({ status: "published", noindex: { $ne: true } })
       .populate("category", "name slug description")
       .sort({ publishedAt: -1, createdAt: -1 })
       .lean();
@@ -150,13 +163,14 @@ export async function getFeaturedPost(): Promise<BlogPost[]> {
     let posts = await BlogPostModel.find({
       featured: true,
       status: "published",
+      noindex: { $ne: true },
     })
       .populate("category", "name slug description")
       .sort({ publishedAt: -1 })
       .lean();
 
     if (posts.length === 0) {
-      posts = await BlogPostModel.find({ status: "published" })
+      posts = await BlogPostModel.find({ status: "published", noindex: { $ne: true } })
         .populate("category", "name slug description")
         .sort({ publishedAt: -1 })
         .limit(3)
@@ -228,6 +242,7 @@ export async function getPostsByCategoryFromDB(
     const posts = await BlogPostModel.find({
       category: category._id,
       status: "published",
+      noindex: { $ne: true },
     })
       .populate("category", "name slug description")
       .sort({ publishedAt: -1 })

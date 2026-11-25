@@ -12,6 +12,10 @@ export const navLinks = [
     href: "/blog",
   },
   {
+    label: "Cost Calculator",
+    href: "/tools/website-cost-calculator",
+  },
+  {
     label: "FAQs",
     href: "/faq",
   },
