@@ -111,14 +111,24 @@ function mapDbPostToType(value: unknown): BlogPost | null {
 
 function mapPosts(posts: unknown[]): BlogPost[] {
   return posts
-    .map(mapDbPostToType)
+    .map((value) => {
+      const mapped = mapDbPostToType(value);
+      if (mapped === null) {
+        const slug =
+          value && typeof value === "object" && "slug" in value
+            ? String((value as { slug?: unknown }).slug ?? "unknown")
+            : "unknown";
+        console.warn(`[blog] Dropping post with missing/invalid category: ${slug}`);
+      }
+      return mapped;
+    })
     .filter((post): post is BlogPost => post !== null);
 }
 
 export async function getAllPublishedPosts(): Promise<BlogPost[]> {
-  try {
-    if (!process.env.MONGODB_URI) return fallbackPosts;
+  if (!process.env.MONGODB_URI) return fallbackPosts;
 
+  try {
     await connectDB();
     const posts = await BlogPostModel.find({ status: "published" })
       .populate("category", "name slug description")
@@ -128,14 +138,14 @@ export async function getAllPublishedPosts(): Promise<BlogPost[]> {
     return mapPosts(posts);
   } catch (error) {
     console.warn("Failed to fetch posts from DB:", error);
-    return process.env.MONGODB_URI ? [] : fallbackPosts;
+    throw error;
   }
 }
 
 export async function getFeaturedPost(): Promise<BlogPost[]> {
-  try {
-    if (!process.env.MONGODB_URI) return fallbackPosts.slice(0, 3);
+  if (!process.env.MONGODB_URI) return fallbackPosts.slice(0, 3);
 
+  try {
     await connectDB();
     let posts = await BlogPostModel.find({
       featured: true,
@@ -156,7 +166,7 @@ export async function getFeaturedPost(): Promise<BlogPost[]> {
     return mapPosts(posts);
   } catch (error) {
     console.warn("Failed to fetch featured posts from DB:", error);
-    return process.env.MONGODB_URI ? [] : fallbackPosts.slice(0, 3);
+    throw error;
   }
 }
 
@@ -174,9 +184,11 @@ export async function getAllPostsForAdmin(): Promise<BlogPost[]> {
 }
 
 export async function getPostBySlugFromDB(slug: string) {
-  try {
-    if (!process.env.MONGODB_URI) return null;
+  if (!process.env.MONGODB_URI) {
+    return fallbackPosts.find((post) => post.slug === slug) || null;
+  }
 
+  try {
     await connectDB();
     const post = await BlogPostModel.findOne({
       slug,
@@ -186,8 +198,9 @@ export async function getPostBySlugFromDB(slug: string) {
       .lean();
 
     return post ? mapDbPostToType(post) : null;
-  } catch {
-    return null;
+  } catch (error) {
+    console.warn(`Failed to fetch post by slug from DB: ${slug}`, error);
+    throw error;
   }
 }
 

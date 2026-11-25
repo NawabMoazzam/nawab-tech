@@ -3,12 +3,15 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { BlogCard } from "@/components/blog/blog-card";
+import { BlogPagination } from "@/components/blog/blog-pagination";
 import { BlogTopics } from "@/components/blog/blog-topics";
 import { FeaturedPost } from "@/components/blog/featured-post";
 import { getAllPublishedPosts } from "@/lib/blog/queries";
 import type { BlogPost } from "@/lib/blog/types";
 import { AdsterraLeaderboard } from "@/components/adsterra-ads/AdsterraBanner";
 import AdsterraSocialBar from "@/components/adsterra-ads/AdsterraSocialBar";
+
+const POSTS_PER_PAGE = 12;
 
 export const metadata: Metadata = {
   title: "Insights & Resources",
@@ -26,6 +29,9 @@ export default async function BlogPage() {
   const featuredPost = posts.find((p: BlogPost) => p.featured) || posts[0];
 
   const latestPosts = posts.filter((post) => post.slug !== featuredPost?.slug);
+  const totalPages = Math.max(1, Math.ceil(latestPosts.length / POSTS_PER_PAGE));
+  const currentPage = 1;
+  const paginatedPosts = latestPosts.slice(0, POSTS_PER_PAGE);
 
   return (
     <>
@@ -86,8 +92,8 @@ export default async function BlogPage() {
               </div>
 
               <div className="border-t border-border">
-                {latestPosts.length > 0 ? (
-                  latestPosts.map((post, index) => (
+                {paginatedPosts.length > 0 ? (
+                  paginatedPosts.map((post, index) => (
                     <BlogCard key={post.slug} post={post} index={index} />
                   ))
                 ) : (
@@ -95,6 +101,10 @@ export default async function BlogPage() {
                     More insights are on the way.
                   </div>
                 )}
+                <BlogPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                />
                 <div className="p-6 flex justify-center">
                   <AdsterraLeaderboard />
                 </div>

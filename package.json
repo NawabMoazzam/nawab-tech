@@ -11,7 +11,8 @@
     "migrate:categories": "tsx scripts/migrate-categories.ts",
     "auto-blog": "tsx scripts/auto-blog/generate-and-publish.ts",
     "facebook-blog": "tsx scripts/social/publish-latest-blog.ts",
-    "facebook-content": "tsx scripts/social/generate-independent-post.ts"
+    "facebook-content": "tsx scripts/social/generate-independent-post.ts",
+    "facebook-insights": "tsx scripts/social/collect-insights.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

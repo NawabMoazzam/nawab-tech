@@ -502,6 +502,11 @@ function validateAndNormalizeGeneratedPost(
 
   const rawContent = typeof raw.content === "string" ? raw.content : "";
   let content = stripLeadingH1(rawContent);
+  // Strip $...$ LaTeX/math wrappers (LLM artifact). Preserve simple currency amounts.
+  content = content.replace(
+    /\$(?!\s)((?:\\.|[^$\n\\])+?)(?<!\s)\$/g,
+    (match, inner: string) => (/^\d[\d,.]*$/.test(inner) ? match : inner),
+  );
 
   const wordCount = countWords(content);
   if (wordCount < 550) {
@@ -644,7 +649,11 @@ Your job is to write authoritative, deeply practical, conversion-aware, and sear
     - \`/services\` (All Services)
     - \`/contact\` (Start a Project / Consultation)
 - **Cover Image Search Query**:
-  - Provide a 2-4 word English stock-photo search phrase for Pexels (e.g., "software team analytics dashboard", "modern office developer laptop").`;
+  - Provide a 2-4 word English stock-photo search phrase for Pexels (e.g., "software team analytics dashboard", "modern office developer laptop").
+- **Formatting constraints (strict)**:
+  - No LaTeX or \`$...$\` math notation. Use plain text instead (for example, write O(1), not \`$O(1)$\`).
+  - Comparison tables must have at most 3 columns with short cell text.
+  - No code block line wider than ~60 characters; wrap or shorten code examples.`;
 
   const responseSchema = {
     type: "object",
@@ -1283,8 +1292,8 @@ async function main() {
         console.warn("[auto-blog] Revalidate call failed (non-fatal):", error);
       }
     } else {
-      console.log(
-        "[auto-blog] Skipping revalidate call (BASE_URL / BLOG_REVALIDATE_SECRET not set). The page will still update via ISR within an hour.",
+      console.warn(
+        "[auto-blog] WARNING: Skipping revalidate call because BASE_URL/NEXT_PUBLIC_BASE_URL or BLOG_REVALIDATE_SECRET is not set. The published post will not be revalidated immediately and may take up to an hour to appear via ISR.",
       );
     }
   }
