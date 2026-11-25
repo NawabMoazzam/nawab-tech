@@ -38,6 +38,7 @@ const blogPostSchema = new Schema(
     author: {
       name: { type: String, default: "Nawab Tech" },
       role: { type: String, default: "Web Development & Digital Products" },
+      url: { type: String, default: "" },
     },
     coverImage: {
       type: String,
@@ -65,6 +66,11 @@ const blogPostSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    focusKeyword: { type: String, trim: true, lowercase: true, default: "" },
+    originalityPrompts: { type: [String], default: [] },
+    originalityAnswers: { type: [String], default: [] },
+    noindex: { type: Boolean, default: false },
+    redirectTo: { type: String, trim: true, default: "" },
     readingTime: {
       type: Number,
       default: 5,

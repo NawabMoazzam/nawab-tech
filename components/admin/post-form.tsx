@@ -29,6 +29,11 @@ type PostFormData = {
   coverImageSource: CoverImageSource;
   status: "draft" | "published";
   featured: boolean;
+  focusKeyword: string;
+  originalityPrompts: string[];
+  originalityAnswers: string[];
+  noindex: boolean;
+  redirectTo: string;
   seo: { title: string; description: string; keywords: string[] };
 };
 
@@ -44,6 +49,11 @@ const initialData: PostFormData = {
   coverImageSource: "upload",
   status: "draft",
   featured: false,
+  focusKeyword: "",
+  originalityPrompts: [],
+  originalityAnswers: [],
+  noindex: false,
+  redirectTo: "",
   seo: { title: "", description: "", keywords: [] },
 };
 
@@ -84,6 +94,8 @@ export function PostForm({
         ...initialData,
         ...initialPost,
         tags: initialPost.tags || [],
+        originalityPrompts: initialPost.originalityPrompts || [],
+        originalityAnswers: initialPost.originalityAnswers || [],
         category: initialCategory,
         // Posts saved before covers had a source are inferred from their data.
         coverImageSource: inferCoverImageSource(initialPost),
@@ -337,6 +349,55 @@ export function PostForm({
                     })
                   }
                   placeholder="web development, business website"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Focus keyword</label>
+                <input
+                  className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
+                  value={form.focusKeyword}
+                  onChange={(e) => setForm({ ...form, focusKeyword: e.target.value })}
+                  placeholder="e.g. small business website cost"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Originality prompts (one question per line)</label>
+                <textarea
+                  className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
+                  rows={4}
+                  value={form.originalityPrompts.join("\n")}
+                  onChange={(e) => setForm({ ...form, originalityPrompts: e.target.value.split("\n").map((item) => item.trim()).filter(Boolean).slice(0, 3) })}
+                  placeholder={"What real project number can you add?\nWhat did you learn first-hand?\nWhich trade-off would you choose and why?"}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">Generated drafts include three questions to help add first-hand evidence. Answer every prompt before publishing.</p>
+              </div>
+              {form.originalityPrompts.map((prompt, index) => (
+                <div key={`${index}-${prompt}`}>
+                  <label className="text-sm font-medium">Author answer {index + 1}: {prompt}</label>
+                  <textarea
+                    className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
+                    rows={2}
+                    value={form.originalityAnswers[index] || ""}
+                    onChange={(e) => {
+                      const originalityAnswers = [...form.originalityAnswers];
+                      originalityAnswers[index] = e.target.value;
+                      setForm({ ...form, originalityAnswers });
+                    }}
+                    placeholder="Add a real project detail, number, decision, or firsthand observation…"
+                  />
+                </div>
+              ))}
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={form.noindex} onChange={(e) => setForm({ ...form, noindex: e.target.checked })} />
+                Exclude from search indexing and sitemap
+              </label>
+              <div>
+                <label className="text-sm font-medium">Redirect to (optional path or URL)</label>
+                <input
+                  className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm"
+                  value={form.redirectTo}
+                  onChange={(e) => setForm({ ...form, redirectTo: e.target.value })}
+                  placeholder="/blog/replacement-article"
                 />
               </div>
             </CardContent>

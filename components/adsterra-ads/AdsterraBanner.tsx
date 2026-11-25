@@ -121,7 +121,7 @@ interface BannerProps {
   lazy?: boolean;
 }
 
-export default function AdsterraBanner({
+function AdsterraBannerEnabled({
   variant,
   className,
   showLabel = true,
@@ -221,6 +221,11 @@ export default function AdsterraBanner({
       </div>
     </div>
   );
+}
+
+export default function AdsterraBanner(props: BannerProps): JSX.Element | null {
+  if (process.env.NEXT_PUBLIC_ADS_ENABLED === "false") return null;
+  return <AdsterraBannerEnabled {...props} />;
 }
 
 /* -------------------------------------------------------------------------- */

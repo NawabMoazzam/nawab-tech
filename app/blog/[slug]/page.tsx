@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { Footer } from "@/components/footer";
@@ -16,6 +16,7 @@ import AdsterraBanner, {
   AdsterraLeaderboard,
 } from "@/components/adsterra-ads/AdsterraBanner";
 import AdsterraSocialBar from "@/components/adsterra-ads/AdsterraSocialBar";
+import { siteConfig } from "@/lib/site";
 
 type BlogPostPageProps = {
   params: Promise<{
@@ -56,6 +57,7 @@ export async function generateMetadata({
     title: cleanSeoTitle,
     description: seoDescription,
     keywords: seoKeywords,
+    robots: post.noindex ? { index: false, follow: true } : { index: true, follow: true },
     alternates: {
       canonical: `/blog/${post.slug}`,
     },
@@ -70,7 +72,7 @@ export async function generateMetadata({
       modifiedTime: post.updatedAt
         ? new Date(post.updatedAt).toISOString()
         : undefined,
-      authors: [post.author?.name || "Nawab Tech"],
+      authors: [post.author?.name === "Nawab Tech" ? siteConfig.author.name : post.author?.name || siteConfig.author.name],
       section: post.category?.name,
       tags: seoKeywords,
     },
@@ -90,6 +92,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!post) {
     notFound();
   }
+  if (post.redirectTo) permanentRedirect(post.redirectTo);
 
   return (
     <>
@@ -137,7 +140,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </p>
 
                 <div className="mt-10 flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>{post.author?.name || "Nawab Tech"}</span>
+                  <Link href="/about" className="font-medium text-foreground hover:underline">{post.author?.name === "Nawab Tech" ? siteConfig.author.name : post.author?.name || siteConfig.author.name}</Link>
 
                   <span>•</span>
 
@@ -157,6 +160,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                       : ""}
                   </time>
                 </div>
+
+                <Link href="/about" className="mt-8 block max-w-xl border border-border bg-muted/30 p-5 transition-colors hover:bg-muted/60">
+                  <p className="text-sm font-semibold">Written by {post.author?.name === "Nawab Tech" ? siteConfig.author.name : post.author?.name || siteConfig.author.name}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{post.author?.role === "Web Development & Digital Products" || !post.author?.role ? siteConfig.author.role : post.author.role} at Nawab Tech. Practical notes on building useful software for small businesses.</p>
+                  <span className="mt-3 inline-block text-xs font-medium underline underline-offset-4">About the author</span>
+                </Link>
 
                 <div
                   data-reveal="scale"

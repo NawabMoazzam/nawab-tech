@@ -18,6 +18,7 @@ export type BlogPost = {
   author: {
     name: string;
     role: string;
+    url?: string;
   };
 
   publishedAt: string;
@@ -40,6 +41,11 @@ export type BlogPost = {
   contentPath: string;
   content?: string;
   status?: "draft" | "published";
+  focusKeyword?: string;
+  originalityPrompts?: string[];
+  originalityAnswers?: string[];
+  noindex?: boolean;
+  redirectTo?: string;
 
   seo: {
     title: string;
